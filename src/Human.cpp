@@ -265,11 +265,23 @@ void Human::Transaction(int n, Giocatore *Other, std::string *output){
                 } while (!rispostaValida);
             }
             else if (_elenco_proprieta_soc.size() > 0 && _elenco_proprieta_st.size() == 0 && _elenco_proprieta.size() == 0)
+            {
+                std::cout << "Giocatore " << _ID << " ha solo terreni.\n";
+                std::this_thread::sleep_for(std::chrono::seconds(pausa));
                 risposta = 'C';
+            }
             else if (_elenco_proprieta_soc.size() == 0 && _elenco_proprieta_st.size() > 0 && _elenco_proprieta.size() == 0)
+            {
+                std::cout << "Giocatore " << _ID << " ha solo stazioni.\n";
+                std::this_thread::sleep_for(std::chrono::seconds(pausa));
                 risposta = 'S';
+            }
             else if (_elenco_proprieta_soc.size() == 0 && _elenco_proprieta_st.size() == 0 && _elenco_proprieta.size() > 0)
+            {
+                std::cout << "Giocatore " << _ID << " ha solo societa'.\n";
+                std::this_thread::sleep_for(std::chrono::seconds(pausa));
                 risposta = 'T';
+            }
             else if(_elenco_proprieta.empty() && _elenco_proprieta_st.empty() && _elenco_proprieta_soc.empty())
             {   
                 // Se il giocatore non ha più nulla da ipotecare, paga tutti i soldi che ha ...

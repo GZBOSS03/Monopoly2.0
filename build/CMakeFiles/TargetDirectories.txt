@@ -1,0 +1,9 @@
+C:/Users/HP/OneDrive/Desktop/Monopoly2.0/build/CMakeFiles/Giocatori.dir
+C:/Users/HP/OneDrive/Desktop/Monopoly2.0/build/CMakeFiles/Tabellone.dir
+C:/Users/HP/OneDrive/Desktop/Monopoly2.0/build/CMakeFiles/Game.dir
+C:/Users/HP/OneDrive/Desktop/Monopoly2.0/build/CMakeFiles/edit_cache.dir
+C:/Users/HP/OneDrive/Desktop/Monopoly2.0/build/CMakeFiles/rebuild_cache.dir
+C:/Users/HP/OneDrive/Desktop/Monopoly2.0/build/CMakeFiles/list_install_components.dir
+C:/Users/HP/OneDrive/Desktop/Monopoly2.0/build/CMakeFiles/install.dir
+C:/Users/HP/OneDrive/Desktop/Monopoly2.0/build/CMakeFiles/install/local.dir
+C:/Users/HP/OneDrive/Desktop/Monopoly2.0/build/CMakeFiles/install/strip.dir

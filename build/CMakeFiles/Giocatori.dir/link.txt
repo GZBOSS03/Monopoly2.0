@@ -1,0 +1,2 @@
+C:\msys64\ucrt64\bin\ar.exe qc libGiocatori.a CMakeFiles/Giocatori.dir/src/Giocatore.cpp.obj CMakeFiles/Giocatori.dir/src/Computer.cpp.obj CMakeFiles/Giocatori.dir/src/Human.cpp.obj
+C:\msys64\ucrt64\bin\ranlib.exe libGiocatori.a

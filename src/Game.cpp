@@ -799,11 +799,12 @@ int main(int argc, char *argv[])
                     output += stampami;
                     // Stampo la scelta del giocatore
                     if (dynamic_cast<Computer*>(players[i]))
+                    {
+                        std::this_thread::sleep_for(std::chrono::seconds(pausa));
                         std::cout << stampami;
+                    }
                     if (wantToBuy)
                     {
-                        if (dynamic_cast<Computer*>(players[i]))
-                            std::this_thread::sleep_for(std::chrono::seconds(pausa));
         // Pagamento
                         players[i]->buy();
                         if (pos1->isCasa1())    // c'è una casa dopo l'acquisto, quindi dovro stampare ...
@@ -943,11 +944,12 @@ int main(int argc, char *argv[])
                     output += stampami;
                     // Stampo la scelta del giocatore
                     if (dynamic_cast<Computer*>(players[i]))
+                    {
+                        std::this_thread::sleep_for(std::chrono::seconds(pausa));
                         std::cout << stampami;
+                    }
                     if (wantToBuy)
                     {
-                        if (dynamic_cast<Computer*>(players[i]))
-                            std::this_thread::sleep_for(std::chrono::seconds(pausa));
         // Pagamento
                         players[i]->buy();
                         aggiornaSchermo(T,players,output);
@@ -1060,11 +1062,12 @@ int main(int argc, char *argv[])
                     output += stampami;
                     // Stampo la scelta del giocatore
                     if (dynamic_cast<Computer*>(players[i]))
+                    {
+                        std::this_thread::sleep_for(std::chrono::seconds(pausa));
                         std::cout << stampami;
+                    }
                     if (wantToBuy)
                     {
-                        if (dynamic_cast<Computer*>(players[i]))
-                            std::this_thread::sleep_for(std::chrono::seconds(pausa));
         // Pagamento
                         players[i]->buy();
                         aggiornaSchermo(T,players,output);

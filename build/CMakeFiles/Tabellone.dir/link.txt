@@ -1,0 +1,2 @@
+C:\msys64\ucrt64\bin\ar.exe qc libTabellone.a CMakeFiles/Tabellone.dir/src/Tabellone.cpp.obj CMakeFiles/Tabellone.dir/src/Casella.cpp.obj CMakeFiles/Tabellone.dir/src/Casella_Terreno.cpp.obj
+C:\msys64\ucrt64\bin\ranlib.exe libTabellone.a
