@@ -29,10 +29,14 @@ void Giocatore::buy(){
     Casella_Terreno *_pos1 = dynamic_cast<Casella_Terreno *>(_pos);
     if (_pos1)
     {
-        pay(_pos1->getPrezzo());                                    // lancia eccezione se il giocatore non ha abbastanza soldi
+        pay(_pos1->getPrezzo());
         _pos1->buy(this);                                           // buy di Casella Laterale setta le sue cose
         if (!_pos1->isCasa1() && (_pos1->getProprietario() == this)) // Se è avvenuto l'acquisto del terreno (non c'è una casa e il proprietario è il giocatore)
-            _elenco_proprieta.push_back(_pos1);                     // aggiungo la casella alla lista di proprietà   
+        {
+            _elenco_proprieta.push_back(_pos1);                     // aggiungo il terreno alla lista di proprietà
+            // Ordinamento del vector utilizzando il predicato personalizzato
+            std::sort(_elenco_proprieta.begin(), _elenco_proprieta.end(), confrontaElementi);
+        }
     }
 
     // Si effettua il cast della posizione
@@ -62,8 +66,11 @@ void Giocatore::buy(int prezzo, Casella* c){
         pay(prezzo);
         _pos1->buy(this); // buy di Casella Laterale setta le sue cose
         if (!_pos1->isCasa1() && (_pos1->getProprietario() == this)) // Se è avvenuto l'acquisto del terreno (non c'è una casa e il proprietario è il giocatore)
-            _elenco_proprieta.push_back(_pos1);                     // aggiungo la casella alla lista di proprietà
-        
+        {
+            _elenco_proprieta.push_back(_pos1);                     // aggiungo il terreno alla lista di proprietà
+            // Ordinamento del vector utilizzando il predicato personalizzato
+            std::sort(_elenco_proprieta.begin(), _elenco_proprieta.end(), confrontaElementi);
+        }
     }
 
     // Si effettua il cast della posizione
@@ -217,20 +224,13 @@ bool Giocatore::giveTo(Casella_Stazione* A, Giocatore *Other)
     return false; // Se la proprietà non è nell'elenco
 }
 
-// Predicati personalizzati per la funzione di ordinamento
-bool confrontaElementiCanBuy(const Casella_Terreno* elem1, const Casella_Terreno* elem2) {
-    return elem1->canBuy() < elem2->canBuy();
-}
-
+// Predicato personalizzato per la funzione di ordinamento
 bool confrontaElementi(const Casella_Terreno* elem1, const Casella_Terreno* elem2) {
-    return elem1->getFamily() < elem2->getFamily();
+    return elem1->getPrezzoTerreno() <= elem2->getPrezzoTerreno();
 }
 
 std::ostream &operator<<(std::ostream &os, Giocatore G)
 {
-    // Ordinamento del vector utilizzando il predicato personalizzato
-    std::sort(G._elenco_proprieta.begin(), G._elenco_proprieta.end(), confrontaElementi);
-
     std::string toAdd = "";
     if (G.hasFreeExitPrisonImpr())
         toAdd = toAdd + "*";

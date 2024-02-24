@@ -231,6 +231,8 @@ int main(int argc, char *argv[])
                             }
                             else
                             {
+                                if (players[i]->getNTurno() > 1)   // Se è in un turno extra (secondo o terzo) e ha fatto un numero di dadi diverso
+                                    players[i]->resetNTurno();  // Il turno del giocatore torna ad 1 e si passa al giocatore successivo
                                 std::cout << "Giocatore " << players[i]->getID() << " ha fatto 2 numeri diversi, quindi resta in prigione.\n";
                                 players[i]->incrementTurniJail();
                                 std::this_thread::sleep_for(std::chrono::seconds(pausa));
@@ -622,8 +624,8 @@ int main(int argc, char *argv[])
                         break;
                         
                         case 7:
-                            std::cout << "Avanzate fino alla stazione ferroviaria piu vicina:\nse e' libera potete acquistarla dalla banca;\nse e' di un altro giocatore dovete pagargli il doppio di cio' che gli spetta normalmente.\n";
-                            output += "Avanzate fino alla stazione ferroviaria piu vicina:\nse e' libera potete acquistarla dalla banca;\nse e' di un altro giocatore dovete pagargli il doppio di cio' che gli spetta normalmente.\n";
+                            std::cout << "Avanzate fino alla stazione ferroviaria piu vicina, se e' di un altro giocatore l'affitto viene raddoppiato.\n";
+                            output += "Avanzate fino alla stazione ferroviaria piu vicina:, se e' di un altro giocatore l'affitto viene raddoppiato.\n";
                             players[i]->getPosition()->removePlayer(players[i]->getID()); // Rimozione dal tabellone del giocatore dalla casella vecchia
                             players[i]->moveTo(1);
                             affittoRaddoppiato = true;
@@ -638,8 +640,8 @@ int main(int argc, char *argv[])
                         break;
                         
                         case 8:
-                            std::cout << "Avanzate fino alla societa' piu vicina:\nse e' libera potete acquistarla dalla banca;\nse e' di un altro giocatore dovete pagargli il doppio di cio' che gli spetta normalmente.\n";
-                            output += "Avanzate fino alla societa' piu vicina:\nse e' libera potete acquistarla dalla banca;\nse e' di un altro giocatore dovete pagargli il doppio di cio' che gli spetta normalmente.\n";
+                            std::cout << "Avanzate fino alla societa' piu vicina, se e' di un altro giocatore l'affitto viene raddoppiato.\n";
+                            output += "Avanzate fino alla societa' piu vicina, se e' di un altro giocatore l'affitto viene raddoppiato.\n";
                             players[i]->getPosition()->removePlayer(players[i]->getID()); // Rimozione dal tabellone del giocatore dalla casella vecchia
                             players[i]->moveTo(2);
                             affittoRaddoppiato = true;
@@ -800,8 +802,8 @@ int main(int argc, char *argv[])
                     // Stampo la scelta del giocatore
                     if (dynamic_cast<Computer*>(players[i]))
                     {
-                        std::this_thread::sleep_for(std::chrono::seconds(pausa));
                         std::cout << stampami;
+                        std::this_thread::sleep_for(std::chrono::seconds(pausa));
                     }
                     if (wantToBuy)
                     {
@@ -945,8 +947,8 @@ int main(int argc, char *argv[])
                     // Stampo la scelta del giocatore
                     if (dynamic_cast<Computer*>(players[i]))
                     {
-                        std::this_thread::sleep_for(std::chrono::seconds(pausa));
                         std::cout << stampami;
+                        std::this_thread::sleep_for(std::chrono::seconds(pausa));
                     }
                     if (wantToBuy)
                     {
@@ -988,24 +990,22 @@ int main(int argc, char *argv[])
                     {
                         toPay = toPay * 2;
                     }
-                    if (pos2->getProprietario()->_elenco_proprieta_st.size()>1)
+                    int size = pos2->getProprietario()->_elenco_proprieta_st.size();
+                    std::string staz = " stazione";
+                    int k = 1; // Fattore moltiplicativo
+                    for (int s=1; s < size; s++)
                     {
-                        int size = pos2->getProprietario()->_elenco_proprieta_st.size();
-                        std::string staz = " stazione";
-                        int k = 1; // Fattore moltiplicativo
-                        for (int s=1; s < size; s++)
-                        {
-                            staz = " stazioni";
-                            k = k * 2;
-                        }
-                        std::cout << "L'affitto con " << size << staz << " e' di " << pos2->getAffitto() << " x " << k << " = " << toPay << ".\n";
-                        output +=  "L'affitto con " + std::to_string(size) + staz + " e' di " + std::to_string(pos2->getAffitto()) + " x " + std::to_string(k) + " = " + std::to_string(toPay) + ".\n";
-                        std::this_thread::sleep_for(std::chrono::seconds(pausa));
+                        staz = " stazioni";
+                        k = k * 2;
                     }
+                    std::cout << "L'affitto con " << size << staz << " e' di " << pos2->getAffitto() << " x " << k << " = " << toPay << ".\n";
+                    output +=  "L'affitto con " + std::to_string(size) + staz + " e' di " + std::to_string(pos2->getAffitto()) + " x " + std::to_string(k) + " = " + std::to_string(toPay) + ".\n";
+                    std::this_thread::sleep_for(std::chrono::seconds(pausa));
                     if (affittoRaddoppiato)
                     {
                         std::cout << "L'imprevisto fa si che l'affitto si raddoppi: " << toPay << " x 2 = " << toPay*2 << ".\n";
                         output += "L'imprevisto fa si che l'affitto si raddoppi: " + std::to_string(toPay) + " x 2 = "  + std::to_string(toPay*2) + ".\n";
+                        std::this_thread::sleep_for(std::chrono::seconds(pausa));
                         toPay = toPay*2;
                     }
         // Pagamento
@@ -1063,8 +1063,8 @@ int main(int argc, char *argv[])
                     // Stampo la scelta del giocatore
                     if (dynamic_cast<Computer*>(players[i]))
                     {
-                        std::this_thread::sleep_for(std::chrono::seconds(pausa));
                         std::cout << stampami;
+                        std::this_thread::sleep_for(std::chrono::seconds(pausa));
                     }
                     if (wantToBuy)
                     {
@@ -1099,15 +1099,15 @@ int main(int argc, char *argv[])
                     int toPay = tiro.first + tiro.second;
                     if (pos4->getProprietario()->_elenco_proprieta_soc.size() == 1)
                     {
-                        std::cout << "Affitto = tirodadi(" << toPay << ") x 4 (con 1 societa') = " << toPay*4 << ".\n";
-                        output += "Affitto = tirodadi(" + std::to_string(toPay) + ") x 4 (con 1 societa') = " + std::to_string(toPay*4) + ".\n";
+                        std::cout << "Affitto = tirodadi (" << toPay << ") x 4 (con 1 societa') = " << toPay*4 << ".\n";
+                        output += "Affitto = tirodadi (" + std::to_string(toPay) + ") x 4 (con 1 societa') = " + std::to_string(toPay*4) + ".\n";
                         std::this_thread::sleep_for(std::chrono::seconds(pausa));
                         toPay = toPay*4;
                     }
                     if (pos4->getProprietario()->_elenco_proprieta_soc.size() == 2)
                     {
-                        std::cout << "Affitto = tirodadi(" << toPay << ") x 10 (con 2 societa') = " << toPay*10 << ".\n";
-                        output += "Affitto = tirodadi(" + std::to_string(toPay) + ") x 10 (con 2 societa') = " + std::to_string(toPay*10) + ".\n";
+                        std::cout << "Affitto = tirodadi (" << toPay << ") x 10 (con 2 societa') = " << toPay*10 << ".\n";
+                        output += "Affitto = tirodadi (" + std::to_string(toPay) + ") x 10 (con 2 societa') = " + std::to_string(toPay*10) + ".\n";
                         std::this_thread::sleep_for(std::chrono::seconds(pausa));
                         toPay = toPay*10;
                     }
@@ -1115,6 +1115,7 @@ int main(int argc, char *argv[])
                     {
                         std::cout << "L'imprevisto fa si che l'affitto si raddoppi: " << toPay << " x 2 = " << toPay*2 << ".\n";
                         output += "L'imprevisto fa si che l'affitto si raddoppi: " + std::to_string(toPay) + " x 2 = "  + std::to_string(toPay*2) + ".\n";
+                        std::this_thread::sleep_for(std::chrono::seconds(pausa));
                         toPay = toPay*2;
                     }
         // Pagamento

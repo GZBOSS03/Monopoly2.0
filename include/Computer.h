@@ -14,7 +14,7 @@ public:
 
     bool choice(std::string*) override;
     bool partecipaAsta(int*, Casella*, bool, int) override;
-    void Transaction(int, Giocatore *, std::string * = nullptr) override;
+    void Transaction(int, Giocatore *, std::string *) override;
 };
 
 #endif  // COMPUTER_H

@@ -26,7 +26,8 @@ public:
     
     // Funzioni GET
     int getAffitto() const; // ritorna il prezzo da pagare di pernottamento (in casa o in albergo)
-    int getPrezzo() const;  // restituisce il prezzo per aquistare la casella/casa/albergo
+    int getPrezzo() const;  // restituisce il prezzo per aquistare terreno/casa/albergo
+    int getPrezzoTerreno() const { return _prezzo_terreno;}
     Giocatore* getProprietario() const { return _proprietario; }
     char getFamily () const { return _family; }
     bool isCasa1() const { return _casa1; }

@@ -51,7 +51,7 @@ public:
     void resetNTurno() { _nturno = 1; }
 
     // Funzioni di modifica soldi di un giocatore
-    virtual void Transaction(int, Giocatore *, std::string * = nullptr) {}; // Se non si hanno abbastanza soldi il giocatore ipoteca fin che può e infine, quando non potra più pagare, viene eliminato e lancio eccezione
+    virtual void Transaction(int, Giocatore *, std::string *) {}; // Se non si hanno abbastanza soldi il giocatore ipoteca fin che può e infine, quando non potra più pagare, viene eliminato e lancio eccezione
     void pay(int);                         // Se non si hanno abbastanza soldi il giocatore non può pagare e lancio eccezione
     void deposit(int);                     // chiamato quando un altro giocatore cade su un mio terreno e mi deve pagare o quando passo dal via
 
@@ -87,6 +87,6 @@ protected:
 std::ostream &operator<<(std::ostream &, Giocatore);
 
 // Predicato personalizzato per la funzione di ordinamento
-bool confrontaElementiCanBuy(const Casella_Terreno* elem1, const Casella_Terreno* elem2);
+bool confrontaElementi(const Casella_Terreno* elem1, const Casella_Terreno* elem2);
 
 #endif // GIOCATORE_H

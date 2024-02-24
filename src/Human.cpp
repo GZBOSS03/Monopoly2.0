@@ -78,12 +78,18 @@ bool Human::choice(std::string* p){
         std::cin >> risposta;
         if (risposta == 'S' || risposta == 's')
         {
-            *p += "S\n";
+            if (risposta == 'S')
+                *p += "S\n";
+            else
+                *p += "s\n";
             return true;
         }
         else if (risposta == 'N' || risposta == 'n')
         {
-            *p += "N\n";
+            if (risposta == 'N')
+                *p += "N\n";
+            else
+                *p += "n\n";
             if (_isInJail)
             {
                 std::cout << "Giocatore " + std::to_string(_ID) + " vuole tentare la sorte con i dadi.\n";
@@ -157,14 +163,15 @@ void Human::Transaction(int n, Giocatore *Other, std::string *output){
         int pausa = 2;  // Pausa del programma tra una stampa e un'altra
         // Vediamo se c'è qualcosa da ipotecare:
         std::cout << "Giocatore " << _ID << " non ha abbastanza " << Variabili::getValuta() << " per pagare e deve ipotecare qualcosa.\n";
-        *output += "Giocatore " + std::to_string(_ID) + " non ha abbastanza " + Variabili::getValuta() + " per pagare e deve ipotecare qualcosa.\n";
+        std::string init = "Giocatore " + std::to_string(_ID) + " non ha abbastanza " + Variabili::getValuta() + " per pagare e ipoteca:\n";
+        std::string *toAdd = &init;
         if (FreeExitPrisonImpr)
         {
             setFreeExitPrisonImpr(false);
             deposit(50);
             std::this_thread::sleep_for(std::chrono::seconds(pausa));
             std::cout << "Venduta carta imprevisto uscita gratis di prigione alla banca, ricavati: 50 " << Variabili::getValuta() << ".\n";
-            *output += "Venduta carta imprevisto uscita gratis di prigione alla banca, ricavati: 50 " + Variabili::getValuta() + ".\n";
+            *toAdd += "- carta imprevisto uscita gratis di prigione (50)\n";
             std::this_thread::sleep_for(std::chrono::seconds(pausa));
             std::cout << "Giocatore " << _ID << " ora ha " << _money << " " << Variabili::getValuta();
             if (_money < n)
@@ -178,7 +185,7 @@ void Human::Transaction(int n, Giocatore *Other, std::string *output){
             deposit(50);
             std::this_thread::sleep_for(std::chrono::seconds(pausa));
             std::cout << "Venduta carta probabilita' uscita gratis di prigione alla banca, ricavati: 50 " << Variabili::getValuta() << ".\n";
-            *output += "Venduta carta probabilita' uscita gratis di prigione alla banca, ricavati: 50 " + Variabili::getValuta() + ".\n";
+            *toAdd += "- carta probabilita' uscita gratis di prigione (50)\n";
             std::this_thread::sleep_for(std::chrono::seconds(pausa));
             std::cout << "Giocatore " << _ID << " ora ha " << _money << " " << Variabili::getValuta();
             if (_money < n)
@@ -266,7 +273,7 @@ void Human::Transaction(int n, Giocatore *Other, std::string *output){
             }
             else if (_elenco_proprieta_soc.size() > 0 && _elenco_proprieta_st.size() == 0 && _elenco_proprieta.size() == 0)
             {
-                std::cout << "Giocatore " << _ID << " ha solo terreni.\n";
+                std::cout << "Giocatore " << _ID << " ha solo societa'.\n";
                 std::this_thread::sleep_for(std::chrono::seconds(pausa));
                 risposta = 'C';
             }
@@ -278,14 +285,14 @@ void Human::Transaction(int n, Giocatore *Other, std::string *output){
             }
             else if (_elenco_proprieta_soc.size() == 0 && _elenco_proprieta_st.size() == 0 && _elenco_proprieta.size() > 0)
             {
-                std::cout << "Giocatore " << _ID << " ha solo societa'.\n";
+                std::cout << "Giocatore " << _ID << " ha solo terreni.\n";
                 std::this_thread::sleep_for(std::chrono::seconds(pausa));
                 risposta = 'T';
             }
             else if(_elenco_proprieta.empty() && _elenco_proprieta_st.empty() && _elenco_proprieta_soc.empty())
             {   
                 // Se il giocatore non ha più nulla da ipotecare, paga tutti i soldi che ha ...
-                std::string s = "Giocatore " + std::to_string(_ID) + "non ha piu nulla da ipotecare e non riesce a pagare.";
+                std::string s = *toAdd + "Giocatore " + std::to_string(_ID) + "non ha piu nulla da ipotecare e non riesce a pagare.";
                 std::cout << s;
                 std::this_thread::sleep_for(std::chrono::seconds(pausa));
                 s += "Giocatore " + std::to_string(_ID) + " ha pagato tutti i suoi " + Variabili::getValuta() + ", " + std::to_string(_money);
@@ -322,7 +329,7 @@ void Human::Transaction(int n, Giocatore *Other, std::string *output){
                             if (gg == 'S' || gg == 's')
                             {
                                 std::cout << "Giocatore " << _ID << " ha ipotecato " << _elenco_proprieta_soc[i]->getName() << " e ha ricavato " <<  _elenco_proprieta_soc[i]->getPrezzo()/2 << " " << Variabili::getValuta() << ".\n";
-                                *output += "Giocatore " + std::to_string(_ID) + " ha ipotecato " + _elenco_proprieta_soc[i]->getName() + " e ha ricavato " +  std::to_string(_elenco_proprieta_soc[i]->getPrezzo()/2) + " " + Variabili::getValuta() + ".\n";
+                                *toAdd += "- " + _elenco_proprieta_soc[i]->getName() + " (" + std::to_string(_elenco_proprieta_soc[i]->getPrezzo()/2) + ")\n";
                                 deposit(_elenco_proprieta_soc[i]->getPrezzo()/2);
                                 std::this_thread::sleep_for(std::chrono::seconds(pausa));
                                 std::cout << "Giocatore " << _ID << " ora ha " << _money << " " << Variabili::getValuta();
@@ -335,7 +342,7 @@ void Human::Transaction(int n, Giocatore *Other, std::string *output){
                                 i--;
                                 done = true;
                             }
-                            else if (risposta == 'N' || risposta == 'n')
+                            else if (gg == 'N' || gg == 'n')
                             {
                                 std::cout << "Giocatore " << _ID << " non ha ipotecato " << _elenco_proprieta_soc[i]->getName() << ".\n";
                                 done = true;
@@ -362,7 +369,7 @@ void Human::Transaction(int n, Giocatore *Other, std::string *output){
                             if (gg == 'S' || gg == 's')
                             {
                                 std::cout << "Giocatore " << _ID << " ha ipotecato " << _elenco_proprieta_st[i]->getName() << " e ha ricavato " <<  _elenco_proprieta_st[i]->getPrezzo()/2 << " " << Variabili::getValuta() << ".\n";
-                                *output += "Giocatore " + std::to_string(_ID) + " ha ipotecato " + _elenco_proprieta_st[i]->getName() + " e ha ricavato " +  std::to_string(_elenco_proprieta_st[i]->getPrezzo()/2) + " " + Variabili::getValuta() + ".\n";
+                                *toAdd += "- " + _elenco_proprieta_st[i]->getName() + " (" + std::to_string(_elenco_proprieta_st[i]->getPrezzo()/2) + ")\n";
                                 deposit(_elenco_proprieta_st[i]->getPrezzo()/2);
                                 std::this_thread::sleep_for(std::chrono::seconds(pausa));
                                 std::cout << "Giocatore " << _ID << " ora ha " << _money << " " << Variabili::getValuta();
@@ -375,7 +382,7 @@ void Human::Transaction(int n, Giocatore *Other, std::string *output){
                                 i--;
                                 done = true;
                             }
-                            else if (risposta == 'N' || risposta == 'n')
+                            else if (gg == 'N' || gg == 'n')
                             {
                                 std::cout << "Giocatore " << _ID << " non ha ipotecato " << _elenco_proprieta_st[i]->getName() << ".\n";
                                 done = true;
@@ -389,18 +396,16 @@ void Human::Transaction(int n, Giocatore *Other, std::string *output){
             }
             if (risposta == 'T' || risposta == 't') // Terreno
             {
-                // Ordino il vettore per avere tutte le famiglie complete alla fine, mentre le proprietà "meno importanti" all'inizio del vettore in modo da ipotecarle prima
-                std::sort(_elenco_proprieta.begin(), _elenco_proprieta.end(), confrontaElementiCanBuy);
                 for (int i=0; i < _elenco_proprieta.size(); i++)
                 {
                     if (_money < n)
                     {
-                        std::string s = " ";
+                        std::string k = " ";
                         if (_elenco_proprieta[i]->isAlbergo())
-                            s = " l'albergo in ";
+                            k = " l'albergo in ";
                         else if (_elenco_proprieta[i]->isCasa1())
-                            s = " una casa in ";
-                        std::cout << "Vuoi ipotecare" << s << _elenco_proprieta[i]->getName() << "?\n";
+                            k = " una casa in ";
+                        std::cout << "Vuoi ipotecare" << k << _elenco_proprieta[i]->getName() << "?\n";
                         bool done = false;
                         do
                         {
@@ -411,8 +416,8 @@ void Human::Transaction(int n, Giocatore *Other, std::string *output){
                                 int schei = _elenco_proprieta[i]->getPrezzo()/2;
                                 if (_elenco_proprieta[i]->isCasa1())
                                     schei = schei /_elenco_proprieta[i]->getNFamily();
-                                std::cout << "Giocatore " << _ID << " ha ipotecato" << s << _elenco_proprieta[i]->getName() << " e ha ricavato " << schei << " " << Variabili::getValuta() << ".\n";
-                                *output += "Giocatore " + std::to_string(_ID) + " ha ipotecato" + s + _elenco_proprieta[i]->getName() + " e ha ricavato " +  std::to_string(schei) + " " + Variabili::getValuta() + ".\n";
+                                std::cout << "Giocatore " << _ID << " ha ipotecato" << k << _elenco_proprieta[i]->getName() << " e ha ricavato " << schei << " " << Variabili::getValuta() << ".\n";
+                                *toAdd += "-" + k + _elenco_proprieta[i]->getName() + " (" + std::to_string(schei) + ")\n";
                                 deposit(schei);
                                 if (_elenco_proprieta[i]->isCasa1())
                                     _elenco_proprieta[i]->ipoteca();
@@ -430,9 +435,9 @@ void Human::Transaction(int n, Giocatore *Other, std::string *output){
                                     std::cout << ", abbastanza per pagare.\n";
                                 done = true;
                             }
-                            else if (risposta == 'N' || risposta == 'n')
+                            else if (gg == 'N' || gg == 'n')
                             {
-                                std::cout << "Giocatore " << _ID << " non ha ipotecato" << s << _elenco_proprieta[i]->getName() << ".\n";
+                                std::cout << "Giocatore " << _ID << " non ha ipotecato" << k << _elenco_proprieta[i]->getName() << ".\n";
                                 done = true;
                             } else
                                 std::cout << "Comando non riconosciuto (Inserire S per si, N per no)\n";
@@ -448,6 +453,7 @@ void Human::Transaction(int n, Giocatore *Other, std::string *output){
         if (Other)
             Other->deposit(n);
         this->pay(n);
+        *output += *toAdd;
     }
 }
 
