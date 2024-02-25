@@ -224,9 +224,12 @@ bool Giocatore::giveTo(Casella_Stazione* A, Giocatore *Other)
     return false; // Se la proprietà non è nell'elenco
 }
 
-// Predicato personalizzato per la funzione di ordinamento
+// Predicati per la funzione di ordinamento
 bool confrontaElementi(const Casella_Terreno* elem1, const Casella_Terreno* elem2) {
     return elem1->getPrezzoTerreno() <= elem2->getPrezzoTerreno();
+}
+bool confrontaElementiCanBuy(const Casella_Terreno* elem1, const Casella_Terreno* elem2) {
+    return elem1->canBuy() < elem2->canBuy();
 }
 
 std::ostream &operator<<(std::ostream &os, Giocatore G)
@@ -240,7 +243,7 @@ std::ostream &operator<<(std::ostream &os, Giocatore G)
     os << "\nGiocatore " << G.getID() << toAdd << ": ";
     for (int i = 0; i < G._elenco_proprieta_soc.size(); i++)
     {
-        os << DARK_GRAY_MIX_BLACK << G._elenco_proprieta_soc[i]->getName() << RESET;
+        os << VERDE_MIX_BLACK << G._elenco_proprieta_soc[i]->getName() << RESET;
         s += G._elenco_proprieta_soc[i]->getName();
         if ((i+1 != G._elenco_proprieta_soc.size()) || (G._elenco_proprieta.size() > 0) || (G._elenco_proprieta_st.size() > 0))
         {
@@ -250,7 +253,7 @@ std::ostream &operator<<(std::ostream &os, Giocatore G)
     }
     for (int i = 0; i < G._elenco_proprieta_st.size(); i++)
     {
-        os << DARK_GRAY << G._elenco_proprieta_st[i]->getName() << RESET;
+        os << GRAY_MIX_WHITE << G._elenco_proprieta_st[i]->getName() << RESET;
         s += G._elenco_proprieta_st[i]->getName();
         if ((i+1 != G._elenco_proprieta_st.size()) || (G._elenco_proprieta.size() > 0))
         {
@@ -293,6 +296,11 @@ std::ostream &operator<<(std::ostream &os, Giocatore G)
         {
             os << ", ";
             s += ", ";
+        }
+        else
+        {
+            os << ".";
+            s += ".";
         }
 
     }

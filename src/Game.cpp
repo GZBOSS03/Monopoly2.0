@@ -9,7 +9,6 @@ void clearScreen() { system("cls"); }
 int tiriIniziali = 0;
 int pausa = 2;  // Pausa che il programma fa in output tra una stampa e la successiva
 
-// Mode passata come argomento da terminale
 int main(int argc, char *argv[])
 {
 // Dichiarazione di variabili
@@ -282,18 +281,29 @@ int main(int argc, char *argv[])
             players[i]->move(tiro.first + tiro.second);
             players[i]->getPosition()->addPlayer(players[i]->getID()); // Aggiunta al tabellone del giocatore (nella casella dove si è spostato)
             aggiornaSchermo(T,players,output);
-            std::cout << "Giocatore " << players[i]->getID() << " si e' mosso su " << players[i]->getPosition()->getName() << ".\n";
-            output += "Giocatore " + std::to_string(players[i]->getID()) + " si e' mosso su " + players[i]->getPosition()->getName() + ".\n";
-        
-            // Stampo il passaggio dal via (avvenuto nel move)
-            if (players[i]->getMoney() > tmpMoney)
+            if (players[i]->getPosition() == T.partenza)
             {
+                std::cout << "Giocatore " << players[i]->getID() << " si e' mosso sul via e ha ritirato " + std::to_string(Variabili::moneyPassaggioVia) + " " + Variabili::getValuta() + ".\n";
+                output += "Giocatore " + std::to_string(players[i]->getID()) + " si e' mosso sul via e ha ritirato " + std::to_string(Variabili::moneyPassaggioVia) + " " + Variabili::getValuta() + ".\n";
                 std::this_thread::sleep_for(std::chrono::seconds(pausa));
-                std::cout << "Giocatore " << players[i]->getID() << " e' passato dal via e ha ritirato " <<  Variabili::moneyPassaggioVia << " " << Variabili::getValuta() << ".\n";
-                output += "Giocatore " + std::to_string(players[i]->getID()) + " e' passato dal via e ha ritirato " + std::to_string(Variabili::moneyPassaggioVia) + " " + Variabili::getValuta() + ".\n";
             }
-            std::this_thread::sleep_for(std::chrono::seconds(pausa));
-
+            else
+            {
+                if (!players[i]->isInJail())
+                {
+                    std::cout << "Giocatore " << players[i]->getID() << " si e' mosso su " << players[i]->getPosition()->getName() << ".\n";
+                    output += "Giocatore " + std::to_string(players[i]->getID()) + " si e' mosso su " + players[i]->getPosition()->getName() + ".\n";
+                    std::this_thread::sleep_for(std::chrono::seconds(pausa));
+                }
+        
+                // Stampo il passaggio dal via (avvenuto nel move)
+                if (players[i]->getMoney() > tmpMoney)
+                {
+                    std::cout << "Giocatore " << players[i]->getID() << " e' passato dal via e ha ritirato " <<  Variabili::moneyPassaggioVia << " " << Variabili::getValuta() << ".\n";
+                    output += "Giocatore " + std::to_string(players[i]->getID()) + " e' passato dal via e ha ritirato " + std::to_string(Variabili::moneyPassaggioVia) + " " + Variabili::getValuta() + ".\n";
+                    std::this_thread::sleep_for(std::chrono::seconds(pausa));
+                }
+            }
 // Verifico su che casella è il giocatore
             // Prima controllo se sono finito su una probabilità/imprevisto che potrebbe mandarmi da altre parti nel tabellone
             Casella_Prob_Impr *pos5 = dynamic_cast<Casella_Prob_Impr*>(players[i]->getPosition());
@@ -489,7 +499,7 @@ int main(int argc, char *argv[])
                             players[i]->Transaction(money, nullptr, &output);
                             std::this_thread::sleep_for(std::chrono::seconds(pausa));
                             aggiornaSchermo(T,players,output);
-                            std::cout << "Giocatore " << players[i]->getID() << " ha pagato " << money << ".\n";
+                            std::cout << "Giocatore " << players[i]->getID() << " ha pagato " << money << " " + Variabili::getValuta() + ".\n";
                         }
                         catch (const Giocatore::Player_Lost& e)
                         {
@@ -505,7 +515,7 @@ int main(int argc, char *argv[])
                         players[i]->deposit(money);
                         std::this_thread::sleep_for(std::chrono::seconds(pausa));
                         aggiornaSchermo(T,players,output);
-                        std::cout << "Giocatore " << players[i]->getID() << " ha incassato " << money << ".\n";
+                        std::cout << "Giocatore " << players[i]->getID() << " ha incassato " << money << " " + Variabili::getValuta() + ".\n";
                     }
                 }
     // Imprevisti
@@ -706,7 +716,7 @@ int main(int argc, char *argv[])
                             }
                             aggiornaSchermo(T,players,output);
                             if (players[i]->isInGame())
-                                std::cout << "Giocatore " << players[i]->getID() << " ha pagato 150 " + Variabili::getValuta() + ".\n";
+                                std::cout << "Giocatore " << players[i]->getID() << " ha pagato " << players.size()*50 << " " + Variabili::getValuta() + ".\n";
                         break;
                         
                         case 14:
@@ -747,7 +757,7 @@ int main(int argc, char *argv[])
                             players[i]->Transaction(money, nullptr, &output);
                             std::this_thread::sleep_for(std::chrono::seconds(pausa));
                             aggiornaSchermo(T,players,output);
-                            std::cout << "Giocatore " << players[i]->getID() << " ha pagato " << money << ".\n";
+                            std::cout << "Giocatore " << players[i]->getID() << " ha pagato " << money << " " + Variabili::getValuta() + ".\n";
                         }
                         catch (const Giocatore::Player_Lost& e)
                         {
@@ -763,7 +773,7 @@ int main(int argc, char *argv[])
                         players[i]->deposit(money);
                         std::this_thread::sleep_for(std::chrono::seconds(pausa));
                         aggiornaSchermo(T,players,output);
-                        std::cout << "Giocatore " << players[i]->getID() << " ha incassato " << money << ".\n";
+                        std::cout << "Giocatore " << players[i]->getID() << " ha incassato " << money << " " + Variabili::getValuta() + ".\n";
                     }
                 }
             }
@@ -868,45 +878,44 @@ int main(int argc, char *argv[])
                 else if(pos1->getProprietario() != players[i] && pos1->getProprietario() != nullptr) // questo if non servirebbe per la catena di if/else, ma meglio metterlo
                 {
                     std::cout << "Terreno del giocatore " << pos1->getProprietario()->getID() << ".\n";
-                    output += "Terreno del giocatore " + std::to_string(players[i]->getID()) + ".\n";
+                    output += "Terreno del giocatore " + std::to_string(pos1->getProprietario()->getID()) + ".\n";
                     std::this_thread::sleep_for(std::chrono::seconds(pausa));
 
                     // Stampo la rendita, ovvero quanto il giocatore deve spendere
                     if (!pos1->canBuy())
                     {
-                        std::cout << "La rendita solo terreno e' di " << pos1->getAffitto() << ".\n";
-                        output += "La rendita solo terreno e' di " +  std::to_string(pos1->getAffitto()) + ".\n";
+                        std::cout << "La rendita solo terreno e' di " << pos1->getAffitto() << " " + Variabili::getValuta() + ".\n";
+                        output += "La rendita solo terreno e' di " + std::to_string(pos1->getAffitto()) + " " + Variabili::getValuta() + ".\n";
                     }
                     if (pos1->canBuy() && !pos1->isCasa1())
                     {
-                        
-                        std::cout << "La rendita solo terreno e' di " << pos1->getAffitto()/2 << " x 2 = " << pos1->getAffitto() << " (giocatore " << pos1->getProprietario()->getID() << " possiede tutti i terreni di colore " << pos1->getColor() << ").\n";
-                        output += "La rendita solo terreno e' di " + std::to_string(pos1->getAffitto()/2) + " x 2 = " + std::to_string(pos1->getAffitto()) + " (giocatore " +  std::to_string(pos1->getProprietario()->getID()) + " possiede tutti i terreni di colore " + pos1->getColor() + ").\n";
+                        std::cout << "La rendita solo terreno e' di " << pos1->getAffitto()/2 << " x 2 = " << pos1->getAffitto() << " " + Variabili::getValuta() << " (giocatore " << pos1->getProprietario()->getID() << " possiede tutti i terreni di colore " << pos1->getColor() << ").\n";
+                        output += "La rendita solo terreno e' di " + std::to_string(pos1->getAffitto()/2) + " x 2 = " + std::to_string(pos1->getAffitto()) + " " + Variabili::getValuta() + " (giocatore " +  std::to_string(pos1->getProprietario()->getID()) + " possiede tutti i terreni di colore " + pos1->getColor() + ").\n";
                     }
                     if (pos1->isCasa1() && !pos1->isCasa2())
                     {
-                        std::cout << "La rendita con una casa e' di " << pos1->getAffitto() << ".\n";
-                        output += "La rendita con una casa e' di " +  std::to_string(pos1->getAffitto()) + ".\n";
+                        std::cout << "La rendita con una casa e' di " << pos1->getAffitto() << " " + Variabili::getValuta() + ".\n";
+                        output += "La rendita con una casa e' di " +  std::to_string(pos1->getAffitto()) + " " + Variabili::getValuta() + ".\n";
                     }
                     if (pos1->isCasa2() && !pos1->isCasa3())
                     {
-                        std::cout << "La rendita con due case e' di " << pos1->getAffitto() << ".\n";
-                        output += "La rendita con due case e' di " +  std::to_string(pos1->getAffitto()) + ".\n";
+                        std::cout << "La rendita con due case e' di " << pos1->getAffitto() << " " + Variabili::getValuta() + ".\n";
+                        output += "La rendita con due case e' di " +  std::to_string(pos1->getAffitto()) + " " + Variabili::getValuta() + ".\n";
                     }
                     if (pos1->isCasa3() && !pos1->isCasa4())
                     {
-                        std::cout << "La rendita con tre case e' di " << pos1->getAffitto() << ".\n";
-                        output += "La rendita con tre case e' di " +  std::to_string(pos1->getAffitto()) + ".\n";
+                        std::cout << "La rendita con tre case e' di " << pos1->getAffitto() << " " + Variabili::getValuta() + ".\n";
+                        output += "La rendita con tre case e' di " +  std::to_string(pos1->getAffitto()) + " " + Variabili::getValuta() + ".\n";
                     }
                     if (pos1->isCasa4() && !pos1->isAlbergo())
                     {
-                        std::cout << "La rendita con quattro case e' di " << pos1->getAffitto() << ".\n";
-                        output += "La rendita con quattro case e' di " +  std::to_string(pos1->getAffitto()) + ".\n";
+                        std::cout << "La rendita con quattro case e' di " << pos1->getAffitto() << " " + Variabili::getValuta() + ".\n";
+                        output += "La rendita con quattro case e' di " +  std::to_string(pos1->getAffitto()) + " " + Variabili::getValuta() + ".\n";
                     }
                     if (pos1->isAlbergo())
                     {
-                        std::cout << "La rendita con un albergo e' di " << pos1->getAffitto() << ".\n";
-                        output += "La rendita con un albergo e' di " +  std::to_string(pos1->getAffitto()) + ".\n";
+                        std::cout << "La rendita con un albergo e' di " << pos1->getAffitto() << " " << Variabili::getValuta() << ".\n";
+                        output += "La rendita con un albergo e' di " +  std::to_string(pos1->getAffitto()) + " " + Variabili::getValuta() + ".\n";
                     }
                     std::this_thread::sleep_for(std::chrono::seconds(pausa));
 
@@ -998,13 +1007,13 @@ int main(int argc, char *argv[])
                         staz = " stazioni";
                         k = k * 2;
                     }
-                    std::cout << "L'affitto con " << size << staz << " e' di " << pos2->getAffitto() << " x " << k << " = " << toPay << ".\n";
-                    output +=  "L'affitto con " + std::to_string(size) + staz + " e' di " + std::to_string(pos2->getAffitto()) + " x " + std::to_string(k) + " = " + std::to_string(toPay) + ".\n";
+                    std::cout << "L'affitto e' di " << toPay <<  " " << Variabili::getValuta() << ".\n";
+                    output +=  "L'affitto e' di " + std::to_string(toPay) + " " + Variabili::getValuta() + ".\n";
                     std::this_thread::sleep_for(std::chrono::seconds(pausa));
                     if (affittoRaddoppiato)
                     {
-                        std::cout << "L'imprevisto fa si che l'affitto si raddoppi: " << toPay << " x 2 = " << toPay*2 << ".\n";
-                        output += "L'imprevisto fa si che l'affitto si raddoppi: " + std::to_string(toPay) + " x 2 = "  + std::to_string(toPay*2) + ".\n";
+                        std::cout << "L'imprevisto fa si che l'affitto si raddoppi: " << toPay << " x 2 = " << toPay*2 << " " + Variabili::getValuta() + ".\n";
+                        output += "L'imprevisto fa si che l'affitto si raddoppi: " + std::to_string(toPay) + " x 2 = "  + std::to_string(toPay*2) + " " + Variabili::getValuta() + ".\n";
                         std::this_thread::sleep_for(std::chrono::seconds(pausa));
                         toPay = toPay*2;
                     }
@@ -1099,22 +1108,22 @@ int main(int argc, char *argv[])
                     int toPay = tiro.first + tiro.second;
                     if (pos4->getProprietario()->_elenco_proprieta_soc.size() == 1)
                     {
-                        std::cout << "Affitto = tirodadi (" << toPay << ") x 4 (con 1 societa') = " << toPay*4 << ".\n";
-                        output += "Affitto = tirodadi (" + std::to_string(toPay) + ") x 4 (con 1 societa') = " + std::to_string(toPay*4) + ".\n";
+                        std::cout << "Affitto = tirodadi (" << toPay << ") x 4 (con 1 societa') = " << toPay*4 << " " + Variabili::getValuta() + ".\n";
+                        output += "Affitto = tirodadi (" + std::to_string(toPay) + ") x 4 (con 1 societa') = " + std::to_string(toPay*4) + " " + Variabili::getValuta() + ".\n";
                         std::this_thread::sleep_for(std::chrono::seconds(pausa));
                         toPay = toPay*4;
                     }
                     if (pos4->getProprietario()->_elenco_proprieta_soc.size() == 2)
                     {
-                        std::cout << "Affitto = tirodadi (" << toPay << ") x 10 (con 2 societa') = " << toPay*10 << ".\n";
-                        output += "Affitto = tirodadi (" + std::to_string(toPay) + ") x 10 (con 2 societa') = " + std::to_string(toPay*10) + ".\n";
+                        std::cout << "Affitto = tirodadi (" << toPay << ") x 10 (con 2 societa') = " << toPay*10 << " " + Variabili::getValuta() + ".\n";
+                        output += "Affitto = tirodadi (" + std::to_string(toPay) + ") x 10 (con 2 societa') = " + std::to_string(toPay*10) + " " + Variabili::getValuta() + ".\n";
                         std::this_thread::sleep_for(std::chrono::seconds(pausa));
                         toPay = toPay*10;
                     }
                     if (affittoRaddoppiato)
                     {
-                        std::cout << "L'imprevisto fa si che l'affitto si raddoppi: " << toPay << " x 2 = " << toPay*2 << ".\n";
-                        output += "L'imprevisto fa si che l'affitto si raddoppi: " + std::to_string(toPay) + " x 2 = "  + std::to_string(toPay*2) + ".\n";
+                        std::cout << "L'imprevisto fa si che l'affitto si raddoppi: " << toPay << " x 2 = " << toPay*2 << " " + Variabili::getValuta() + ".\n";
+                        output += "L'imprevisto fa si che l'affitto si raddoppi: " + std::to_string(toPay) + " x 2 = "  + std::to_string(toPay*2) + " " + Variabili::getValuta() + ".\n";
                         std::this_thread::sleep_for(std::chrono::seconds(pausa));
                         toPay = toPay*2;
                     }
@@ -1220,7 +1229,8 @@ int main(int argc, char *argv[])
                         }
                         std::cout << ".\n";
                         hey += ".\n";
-                        std::this_thread::sleep_for(std::chrono::seconds(pausa));
+                        if (noOneWants)
+                            std::this_thread::sleep_for(std::chrono::seconds(pausa));
                         std::cout << "Proprieta' in vendita: " << players[i]->getPosition()->getName() << ".\n";
                         hey += "Proprieta' in vendita: " + players[i]->getPosition()->getName() + ".\n";
                         std::cout << "Prezzo attuale: " << prezzo << ".\n";
@@ -1288,7 +1298,7 @@ int main(int argc, char *argv[])
                         if (playersAsta[0]->_elenco_proprieta_soc.size() == 2 && pos4)
                         {
                             std::this_thread::sleep_for(std::chrono::seconds(pausa));
-                            std::cout << "Giocatore " << players[i]->getID() << " ora possiede tutte e 2 le societa'.\n";
+                            std::cout << "Giocatore " << playersAsta[0]->getID() << " ora possiede tutte e 2 le societa'.\n";
                         }
                         if (pos1)   // Se ho acquistato una casella terreno
                         { // Se è l'ultima di una famiglia di caselle simili

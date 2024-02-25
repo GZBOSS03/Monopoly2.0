@@ -86,7 +86,8 @@ protected:
 
 std::ostream &operator<<(std::ostream &, Giocatore);
 
-// Predicato personalizzato per la funzione di ordinamento
-bool confrontaElementi(const Casella_Terreno* elem1, const Casella_Terreno* elem2);
+// Predicati per la funzione di ordinamento
+bool confrontaElementi(const Casella_Terreno*, const Casella_Terreno*);
+bool confrontaElementiCanBuy(const Casella_Terreno*, const Casella_Terreno*);
 
 #endif // GIOCATORE_H

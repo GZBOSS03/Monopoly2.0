@@ -76,9 +76,9 @@ std::ostream &operator<<(std::ostream &os, Casella A)
     os << pre;
     os << "| ";
     if (A.getNameOutput().substr(0,2) == "St")
-        os << DARK_GRAY;
+        os << GRAY_MIX_WHITE;
     if (A.getNameOutput().substr(0,2) == "So")
-    os << DARK_GRAY_MIX_BLACK;
+    os << VERDE_MIX_BLACK;
     if (A.getNameOutput().substr(0,2) == "?P")
         os << BLUE;
     if (A.getNameOutput().substr(0,2) == "?I")

@@ -7,8 +7,8 @@
 
 // Definizione dei colori
 #define RESET   "\033[0m"
-#define DARK_GRAY "\033[38;5;236m\033[38;5;0m"
-#define DARK_GRAY_MIX_BLACK "\033[38;5;8m\033[38;5;0m"
+#define GRAY_MIX_WHITE "\033[38;5;7m\033[38;5;15m"
+#define VERDE_MIX_BLACK "\033[38;5;2m\033[38;5;0m"  // DARK GRAY
 #define BLUE    "\033[38;5;21m"
 #define ORANGE "\033[38;5;214m"
 

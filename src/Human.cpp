@@ -396,6 +396,8 @@ void Human::Transaction(int n, Giocatore *Other, std::string *output){
             }
             if (risposta == 'T' || risposta == 't') // Terreno
             {
+                // Ordinamento del vector utilizzando il predicato personalizzato
+                std::sort(_elenco_proprieta.begin(), _elenco_proprieta.end(), confrontaElementiCanBuy);
                 for (int i=0; i < _elenco_proprieta.size(); i++)
                 {
                     if (_money < n)

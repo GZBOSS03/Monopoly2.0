@@ -5,13 +5,6 @@ bool Computer::choice(std::string* p){
     std::mt19937 gen(rd());
     std::uniform_int_distribution<int> distr(1,100);
     
-    if (_money > Variabili::initialMoney)    // Se ha più soldi di quelli che aveva ad inizio partita
-    {
-        std::cout << "Giocatore " << _ID << " e' pieno di soldi.\n";
-        *p += "Giocatore " + std::to_string(_ID) + " e' pieno di soldi.\n";
-        return true;
-    }
-
 // Scelta se uscire di prigione
     if (_isInJail)
     {
@@ -25,7 +18,7 @@ bool Computer::choice(std::string* p){
         {
             if(distr(gen) <= Variabili::probabilitaSiExitJail)
             {
-                std::cout << "Giocatore " << _ID << " vuole uscires di prigione ora.\n";
+                std::cout << "Giocatore " << _ID << " vuole uscire di prigione ora.\n";
                 *p += "Giocatore " + std::to_string(_ID) + " vuole uscire di prigione ora.\n";
                 return true;
             }
@@ -37,7 +30,12 @@ bool Computer::choice(std::string* p){
             }
         }
     }
-
+// Scelta acquisto di una casella
+    if (_money > Variabili::initialMoney)    // Se ha più soldi di quelli che aveva ad inizio partita
+    {
+        *p += "Giocatore " + std::to_string(_ID) + " e' pieno di soldi.\n";
+        return true;
+    }
 // Scelta acquisto stazione (della banca)
     Casella_Stazione* st = dynamic_cast<Casella_Stazione*> (_pos);
     if(st)  // Se il computer si trova in una stazione e ne possiede almeno una
@@ -129,20 +127,17 @@ bool Computer::choice(std::string* p){
 }
 
 bool Computer::partecipaAsta(int* p, Casella* tobuy, bool lessMoneyPossible, int minimaOffertaAsta){
-    int probabilitaSi = Variabili::probabilitaSiAsta;
+    int probabilitaSi = 30; // inizialmente il computer vuole rilanciare al 30%
+    int k = 10; // k costante moltiplicativa dell'aggiunta a probabilitaSi
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<int> scelta(1,100);
-
-    if (_money > Variabili::initialMoney)    // Se ha più soldi di quelli che aveva ad inizio partita
-    {
-        probabilitaSi = 100;
-    }
 
     int prezzo;
     Casella_Terreno* a = dynamic_cast<Casella_Terreno*> (tobuy);
     if(a)  // Se il computer deve scegliere di acquistare un terreno
     {
+        probabilitaSi += k*a->getPrezzo()/(*p);
         prezzo = a->getPrezzo();
         // Cerca tra le sue proprietà se ce ne sono dello stesso colore/famiglia
         int z = 0; // contatore
@@ -156,26 +151,30 @@ bool Computer::partecipaAsta(int* p, Casella* tobuy, bool lessMoneyPossible, int
     }
 
     Casella_Stazione* st = dynamic_cast<Casella_Stazione*> (tobuy);
-    if(st)  // Se il computer possiede altre stazioni e tobuy è una stazione, allora vuole comprare assolutamente
+    if(st) // Se tobuy è una stazione
     {
+        probabilitaSi += k*st->getPrezzo()/(*p);
+        // Se il computer deve scegliere se acquistarlo per la prima volta o possiede altre stazioni allora vuole comprare assolutamente
         prezzo = st->getPrezzo();
-        if (!_elenco_proprieta_st.empty())
-            probabilitaSi = 50 + 20*_elenco_proprieta_st.size();
-        if (lessMoneyPossible)   // Se il computer deve scegliere se acquistarlo per la prima volta,
+        if (!_elenco_proprieta_st.empty() || lessMoneyPossible)
             probabilitaSi = 100;
     }
 
     Casella_Societa* so = dynamic_cast<Casella_Societa*> (tobuy);
     if(so)  // Se il computer possiede l'altra società e tobuy è una società, allora vuole comprare assolutamente
     {
+        probabilitaSi += k*so->getPrezzo()/(*p);
         prezzo = so->getPrezzo();
         if (!_elenco_proprieta_soc.empty())
             probabilitaSi = 100;
     }
 
-    if (*p > Variabili::maxMoneyAsta*prezzo) // Se il giocatore non è particolarmente interessato e il prezzo è salito di troppo
+    if (_money > Variabili::initialMoney) // Se il giocatore è ricco, allora vuole acquistare
+        probabilitaSi = 100;
+    else if (*p > Variabili::maxMoneyAsta*prezzo) // Se il prezzo è salito di troppo
     {
-        // std::cout << "Giocatore " << _ID << " pensa che " << *p << " " << Variabili::getValuta() << " siano troppi.\n";
+        std::cout << "Giocatore " << _ID << " pensa che " << *p << " " << Variabili::getValuta() << " siano troppi.\n";
+        std::this_thread::sleep_for(std::chrono::seconds(2));
         return false;
     }
     
@@ -228,6 +227,8 @@ void Computer::Transaction(int n, Giocatore *Other, std::string *output){
         // Vediamo se c'è qualcosa da ipotecare:
         std::cout << "Giocatore " << _ID << " non ha abbastanza " << Variabili::getValuta() << " per pagare e deve ipotecare qualcosa.\n";
         std::string init = "Giocatore " + std::to_string(_ID) + " non ha abbastanza " + Variabili::getValuta() + " per pagare e ipoteca:\n";
+        // Ordinamento del vector utilizzando il predicato personalizzato
+        std::sort(_elenco_proprieta.begin(), _elenco_proprieta.end(), confrontaElementiCanBuy);
         std::string *toAdd = &init;
         std::this_thread::sleep_for(std::chrono::seconds(pausa));
         if (FreeExitPrisonImpr)
@@ -309,9 +310,9 @@ void Computer::Transaction(int n, Giocatore *Other, std::string *output){
                         i=50;   // Per uscire dal ciclo (sono apposto e non devo più ipotecare)
                 }
             }
+            // ... poi il computer elimina case/alberghi ...
             if (_elenco_proprieta.size() > 0)
             {
-                // ... poi il computer elimina case/alberghi ...
                 for (int i=0; i < _elenco_proprieta.size(); i++)
                 {
                     if (_money < n)
@@ -343,7 +344,7 @@ void Computer::Transaction(int n, Giocatore *Other, std::string *output){
                     if (_money < n)
                     {
                         std::cout << "Giocatore " << _ID << " ha ipotecato " << _elenco_proprieta[i]->getName() << " e ha ricavato " << _elenco_proprieta[i]->getPrezzo()/2 << " " << Variabili::getValuta() << ".\n";
-                        *toAdd += "- " + _elenco_proprieta_st[i]->getName() + " (" + std::to_string(_elenco_proprieta[i]->getPrezzo()/2) + ")\n";
+                        *toAdd += "- " + _elenco_proprieta[i]->getName() + " (" + std::to_string(_elenco_proprieta[i]->getPrezzo()/2) + ")\n";
                         deposit(_elenco_proprieta[i]->getPrezzo()/2);
                         std::this_thread::sleep_for(std::chrono::seconds(pausa));
                         std::cout << "Giocatore " << _ID << " ora ha " << _money << " " << Variabili::getValuta();

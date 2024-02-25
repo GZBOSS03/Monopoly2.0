@@ -11,6 +11,7 @@ struct Variabili
     // Personalizzabili
     static const std::string getValuta() {return "euro";}
     static const int contoAllaRovescitaDa = 3;
+    static const int turnoSbloccoAste = 15; // For the future
 
     // Preferibilmete da non modificare
     static const int nFacceDado = 6;
@@ -19,7 +20,6 @@ struct Variabili
     static const int initialMoney = 1500;
     // Da non modificare
     // Variabili per IA dei computer
-    static const int probabilitaSiAsta = 30;
     static const int probabilitaSiFirstAcquisto = 25;
     static const int probabilitaSiExitJail = 50;
     static const int maxMoneyAsta = 3; // Se una proprietà costa 100 il computer in un asta non spenderà mai più di maxMoneyAsta*100 (a meno che non sia davvero interessato)
