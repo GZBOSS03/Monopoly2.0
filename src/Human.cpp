@@ -290,12 +290,12 @@ void Human::Transaction(int n, Giocatore *Other, std::string *output){
                 risposta = 'T';
             }
             else if(_elenco_proprieta.empty() && _elenco_proprieta_st.empty() && _elenco_proprieta_soc.empty())
-            {   
+            {
                 // Se il giocatore non ha più nulla da ipotecare, paga tutti i soldi che ha ...
-                std::string s = *toAdd + "Giocatore " + std::to_string(_ID) + "non ha piu nulla da ipotecare e non riesce a pagare.";
-                std::cout << s;
+                std::cout << "Giocatore " + std::to_string(_ID) + "non ha piu nulla da ipotecare e non riesce a pagare.";
+                *toAdd += "Giocatore " + std::to_string(_ID) + "non ha piu nulla da ipotecare e non riesce a pagare.";
                 std::this_thread::sleep_for(std::chrono::seconds(pausa));
-                s += "Giocatore " + std::to_string(_ID) + " ha pagato tutti i suoi " + Variabili::getValuta() + ", " + std::to_string(_money);
+                std::string s = "Giocatore " + std::to_string(_ID) + " ha pagato tutti i suoi " + Variabili::getValuta() + ", " + std::to_string(_money);
                 if (Other)
                 {
                     s += ", al giocatore " + std::to_string(Other->getID()) + ".\n";
@@ -304,12 +304,14 @@ void Human::Transaction(int n, Giocatore *Other, std::string *output){
                 else
                     s += ", alla banca.\n";
                 this->pay(_money);
+                std::cout << s;
+                *output += *toAdd + s;
 
                 // ... ed esce dal gioco
                 resetPlayer();
                 _isInGame = false;
             
-                throw Player_Lost(s);
+                throw Player_Lost();
             }
             
             // Richiesta all'utente casella per casella se vuole ipotecarla o meno

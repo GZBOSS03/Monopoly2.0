@@ -60,7 +60,7 @@ std::ostream &operator<<(std::ostream &os, Casella A)
 {
     // Capisco quanti spazi mettere davanti/dietro a seconda di quante case/alberghi/giocatori devo stampare
     std::string pre = "", post = "";
-    int x = 7 + A._players.size(); // Spazi extra da stampare ai lati
+    int x = 7 + A._players.size()*2; // Spazi extra da stampare ai lati
     int j=0;
     for (int i = 0; i < (Variabili::dimMaxCasella - x)/2; i++)
     {
@@ -72,13 +72,14 @@ std::ostream &operator<<(std::ostream &os, Casella A)
     if (x == Variabili::dimMaxCasella-1)
         pre += " ";
 
-// Inizia la stampa (x==dimMaxCasella)
+// Inizia la stampa 
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);    
     os << pre;
     os << "| ";
     if (A.getNameOutput().substr(0,2) == "St")
-        os << GRAY_MIX_WHITE;
+        SetConsoleTextAttribute(hConsole, FOREGROUND_INTENSITY | 0);
     if (A.getNameOutput().substr(0,2) == "So")
-    os << VERDE_MIX_BLACK;
+        SetConsoleTextAttribute(hConsole, FOREGROUND_INTENSITY | FOREGROUND_GREEN);
     if (A.getNameOutput().substr(0,2) == "?P")
         os << BLUE;
     if (A.getNameOutput().substr(0,2) == "?I")
@@ -86,10 +87,12 @@ std::ostream &operator<<(std::ostream &os, Casella A)
     // Stampa del nome
     os << A.getNameOutput() << RESET;
 
-    // Salva in s eventuali giocatori
     for (int i = 0; i < A._players.size(); i++)
     {
-        os << A._players.at(i);
+        // Utilizza una std::ostringstream per formattare il testo
+        std::ostringstream playerFormatted;
+        playerFormatted << "\033[4m" << A._players.at(i) << "\033[0m";
+        os << std::setw(10) << playerFormatted.str();
     }
 
     os << " |";

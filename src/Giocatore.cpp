@@ -234,6 +234,7 @@ bool confrontaElementiCanBuy(const Casella_Terreno* elem1, const Casella_Terreno
 
 std::ostream &operator<<(std::ostream &os, Giocatore G)
 {
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE); 
     std::string toAdd = "";
     if (G.hasFreeExitPrisonImpr())
         toAdd = toAdd + "*";
@@ -243,7 +244,8 @@ std::ostream &operator<<(std::ostream &os, Giocatore G)
     os << "\nGiocatore " << G.getID() << toAdd << ": ";
     for (int i = 0; i < G._elenco_proprieta_soc.size(); i++)
     {
-        os << VERDE_MIX_BLACK << G._elenco_proprieta_soc[i]->getName() << RESET;
+        SetConsoleTextAttribute(hConsole, FOREGROUND_INTENSITY | FOREGROUND_GREEN);
+        os << G._elenco_proprieta_soc[i]->getName() << RESET;
         s += G._elenco_proprieta_soc[i]->getName();
         if ((i+1 != G._elenco_proprieta_soc.size()) || (G._elenco_proprieta.size() > 0) || (G._elenco_proprieta_st.size() > 0))
         {
@@ -253,7 +255,8 @@ std::ostream &operator<<(std::ostream &os, Giocatore G)
     }
     for (int i = 0; i < G._elenco_proprieta_st.size(); i++)
     {
-        os << GRAY_MIX_WHITE << G._elenco_proprieta_st[i]->getName() << RESET;
+        SetConsoleTextAttribute(hConsole, FOREGROUND_INTENSITY | 0);
+        os << G._elenco_proprieta_st[i]->getName() << RESET;
         s += G._elenco_proprieta_st[i]->getName();
         if ((i+1 != G._elenco_proprieta_st.size()) || (G._elenco_proprieta.size() > 0))
         {

@@ -4,7 +4,7 @@ bool Computer::choice(std::string* p){
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<int> distr(1,100);
-    
+
 // Scelta se uscire di prigione
     if (_isInJail)
     {
@@ -42,7 +42,7 @@ bool Computer::choice(std::string* p){
     {
         if (_money < st->getPrezzo())
         {
-            *p += "Giocatore " + std::to_string(_ID) + " non ha abbastanza " + Variabili::getValuta() + " per l'acquisto.\n";
+            *p += "Giocatore " + std::to_string(_ID) + " non ha abbastanza " + Variabili::getValuta() + " per l'acquisto di " + st->getName() + ".\n";
             return false;
         }
         else if (!_elenco_proprieta_st.empty())
@@ -58,7 +58,7 @@ bool Computer::choice(std::string* p){
     {
         if (_money < so->getPrezzo())
         {
-            *p += "Giocatore " + std::to_string(_ID) + " non ha abbastanza " + Variabili::getValuta() + " per l'acquisto.\n";
+            *p += "Giocatore " + std::to_string(_ID) + " non ha abbastanza " + Variabili::getValuta() + " per l'acquisto di " + so->getName() + ".\n";
             return false;
         }
         else if (!_elenco_proprieta_soc.empty())
@@ -76,7 +76,12 @@ bool Computer::choice(std::string* p){
         {
             if (_money < a->getPrezzo())
             {
-                *p += "Giocatore " + std::to_string(_ID) + " non ha abbastanza " + Variabili::getValuta() + " per l'acquisto.\n";
+                *p += "Giocatore " + std::to_string(_ID) + " non ha abbastanza " + Variabili::getValuta() + " per l'acquisto di ";
+                if (a->isCasa4())
+                    *p += "alberghi";
+                else
+                    *p += "case";
+                *p += " nei terreni di colore " + a->getColor() + ".\n";
                 return false;
             }
             else
@@ -89,9 +94,9 @@ bool Computer::choice(std::string* p){
 // Scelta acquisto terreno se della banca
         if(!a->getProprietario())  // Se il computer deve scegliere di acquistare un terreno
         {
-            if (_money < a->getPrezzo())    // Se non può acquistarlo
+            if (_money < a->getPrezzoTerreno())    // Se non può acquistarlo
             {
-                *p += "Giocatore " + std::to_string(_ID) + " non ha abbastanza " + Variabili::getValuta() + " per l'acquisto.\n";
+                *p += "Giocatore " + std::to_string(_ID) + " non ha abbastanza " + Variabili::getValuta() + " per l'acquisto di " + a->getName() + ".\n";
                 return false;
             }
             else
@@ -137,8 +142,8 @@ bool Computer::partecipaAsta(int* p, Casella* tobuy, bool lessMoneyPossible, int
     Casella_Terreno* a = dynamic_cast<Casella_Terreno*> (tobuy);
     if(a)  // Se il computer deve scegliere di acquistare un terreno
     {
-        probabilitaSi += k*a->getPrezzo()/(*p);
-        prezzo = a->getPrezzo();
+        probabilitaSi += k*a->getPrezzoTerreno()/(*p);
+        prezzo = a->getPrezzoTerreno();
         // Cerca tra le sue proprietà se ce ne sono dello stesso colore/famiglia
         int z = 0; // contatore
         for (int i=0; i < _elenco_proprieta.size(); i++)
@@ -329,7 +334,10 @@ void Computer::Transaction(int n, Giocatore *Other, std::string *output){
                             std::this_thread::sleep_for(std::chrono::seconds(pausa));
                             std::cout << "Giocatore " << _ID << " ora ha " << _money << " " << Variabili::getValuta();
                             if (_money < n)
+                            {
                                 std::cout << ", ma ancora non bastano.\n";
+                                i--;
+                            }
                             else
                                 std::cout << ", abbastanza per pagare.\n";
                             std::this_thread::sleep_for(std::chrono::seconds(pausa));
@@ -343,9 +351,9 @@ void Computer::Transaction(int n, Giocatore *Other, std::string *output){
                 {
                     if (_money < n)
                     {
-                        std::cout << "Giocatore " << _ID << " ha ipotecato " << _elenco_proprieta[i]->getName() << " e ha ricavato " << _elenco_proprieta[i]->getPrezzo()/2 << " " << Variabili::getValuta() << ".\n";
-                        *toAdd += "- " + _elenco_proprieta[i]->getName() + " (" + std::to_string(_elenco_proprieta[i]->getPrezzo()/2) + ")\n";
-                        deposit(_elenco_proprieta[i]->getPrezzo()/2);
+                        std::cout << "Giocatore " << _ID << " ha ipotecato " << _elenco_proprieta[i]->getName() << " e ha ricavato " << _elenco_proprieta[i]->getPrezzoTerreno()/2 << " " << Variabili::getValuta() << ".\n";
+                        *toAdd += "- " + _elenco_proprieta[i]->getName() + " (" + std::to_string(_elenco_proprieta[i]->getPrezzoTerreno()/2) + ")\n";
+                        deposit(_elenco_proprieta[i]->getPrezzoTerreno()/2);
                         std::this_thread::sleep_for(std::chrono::seconds(pausa));
                         std::cout << "Giocatore " << _ID << " ora ha " << _money << " " << Variabili::getValuta();
                         if (_money < n)
@@ -362,12 +370,12 @@ void Computer::Transaction(int n, Giocatore *Other, std::string *output){
                 }
             }
             if(_elenco_proprieta.empty() && _elenco_proprieta_st.empty() && _elenco_proprieta_soc.empty() && _money<n)
-            {   
+            {
                 // Se il giocatore non ha più nulla da ipotecare, paga tutti i soldi che ha ...
-                std::string s = *toAdd + "Giocatore " + std::to_string(_ID) + "non ha piu nulla da ipotecare e non riesce a pagare.";
-                std::cout << s;
+                std::cout << "Giocatore " + std::to_string(_ID) + "non ha piu nulla da ipotecare e non riesce a pagare.";
+                *toAdd += "Giocatore " + std::to_string(_ID) + "non ha piu nulla da ipotecare e non riesce a pagare.";
                 std::this_thread::sleep_for(std::chrono::seconds(pausa));
-                s += "Giocatore " + std::to_string(_ID) + " ha pagato tutti i suoi " + Variabili::getValuta() + ", " + std::to_string(_money);
+                std::string s = "Giocatore " + std::to_string(_ID) + " ha pagato tutti i suoi " + Variabili::getValuta() + ", " + std::to_string(_money);
                 if (Other)
                 {
                     s += ", al giocatore " + std::to_string(Other->getID()) + ".\n";
@@ -376,12 +384,14 @@ void Computer::Transaction(int n, Giocatore *Other, std::string *output){
                 else
                     s += ", alla banca.\n";
                 this->pay(_money);
+                std::cout << s;
+                *output += *toAdd + s;
 
                 // ... ed esce dal gioco
                 resetPlayer();
                 _isInGame = false;
             
-                throw Player_Lost(s);
+                throw Player_Lost();
             }
         }
 

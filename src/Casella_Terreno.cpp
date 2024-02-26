@@ -248,10 +248,10 @@ void Casella_Terreno::buy(Giocatore *g)
        _proprietario = g;
     else
     {// Tentativo di acquistare una casa/albergo su tutte le proprietà della famiglia
-    char target = _family;
+        char target = _family;
         for (int i=0; i< g->_elenco_proprieta.size(); i++)
         {
-            if (g->_elenco_proprieta[i]->getFamily() == target) // Se il terreno è della stessa famiglia della proprietà su cui è il giocatore
+            if (g->_elenco_proprieta[i]->getFamily() == target && g->getMoney()>g->_elenco_proprieta[i]->getPrezzo()) // Se il terreno è della stessa famiglia della proprietà su cui è il giocatore
             {
                 g->_elenco_proprieta[i]->build();
             }
@@ -372,7 +372,7 @@ std::ostream &operator<<(std::ostream &os, Casella_Terreno A)
 {
 // Capisco quanti spazi mettere davanti/dietro a seconda di quante case/alberghi/giocatori devo stampare
     std::string pre = "", post = "";
-    int x = 7 + A._players.size(); // Spazi extra da stampare ai lati
+    int x = 7 + A._players.size()*2; // Spazi extra da stampare ai lati
     if (A.isAlbergo())
         x++;
     else
@@ -422,7 +422,7 @@ std::ostream &operator<<(std::ostream &os, Casella_Terreno A)
     // Stampa del nome
     os << A.getNameOutput() << RESET;
 
-    // Se c'è una casa o un'albergo lo salvo in s
+    // Stampa una casa o un'albergo (se c'è)
     if (A.isAlbergo())
         os << "^";
     else
@@ -436,10 +436,14 @@ std::ostream &operator<<(std::ostream &os, Casella_Terreno A)
         if(A.isCasa4())
             os << "*";
     }
-    // Salva in s eventuali giocatori
+
+    // Stampa di eventuali giocatori
     for (int i = 0; i < A._players.size(); i++)
     {
-        os << A._players.at(i);
+        // Utilizza una std::ostringstream per formattare il testo
+        std::ostringstream playerFormatted;
+        playerFormatted << "\033[4m" << A._players.at(i) << "\033[0m";
+        os << std::setw(10) << playerFormatted.str();
     }
 
     os << " |";

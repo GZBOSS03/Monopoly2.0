@@ -61,12 +61,7 @@ public:
 
     // Eccezioni
     class Not_Enough_Money{};
-    class Player_Lost
-    {
-        public:
-        std::string s;
-        Player_Lost(std::string initS) {s=initS;} // Costruttore
-    };
+    class Player_Lost{};
 
     // Variabili oggetto di giocatore
     std::vector<Casella_Terreno *> _elenco_proprieta;

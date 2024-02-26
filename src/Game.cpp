@@ -191,9 +191,8 @@ int main(int argc, char *argv[])
                         }
                         catch (const Giocatore::Player_Lost& e)
                         {
-                            std::cout << e.s;
                             std::this_thread::sleep_for(std::chrono::seconds(pausa));
-                            output += e.s + "Giocatore " + std::to_string(players[i]->getID()) + " e' andato in bancarotta e ha perso.\n";
+                            output += "Giocatore " + std::to_string(players[i]->getID()) + " e' andato in bancarotta e ha perso.\n";
                             T.prison->removePlayer(players[i]->getID());
                         }
                         aggiornaSchermo(T,players,output);
@@ -447,9 +446,8 @@ int main(int argc, char *argv[])
                                     }
                                     catch (const Giocatore::Player_Lost& e)
                                     {
-                                        std::cout << e.s;
                                         std::this_thread::sleep_for(std::chrono::seconds(pausa));
-                                        output += e.s + "Giocatore " + std::to_string(players[bob]->getID()) + " e' andato in bancarotta e ha perso.\n";
+                                        output += "Giocatore " + std::to_string(players[bob]->getID()) + " e' andato in bancarotta e ha perso.\n";
                                         players[bob]->getPosition()->removePlayer(players[bob]->getID());
                                     }
                                     guadagno += tmpMoney - players[bob]->getMoney();
@@ -503,9 +501,8 @@ int main(int argc, char *argv[])
                         }
                         catch (const Giocatore::Player_Lost& e)
                         {
-                            std::cout << e.s;
                             std::this_thread::sleep_for(std::chrono::seconds(pausa));
-                            output += e.s + "Giocatore " + std::to_string(players[i]->getID()) + " e' andato in bancarotta e ha perso.\n";
+                            output += "Giocatore " + std::to_string(players[i]->getID()) + " e' andato in bancarotta e ha perso.\n";
                             players[i]->getPosition()->removePlayer(players[i]->getID());
                             aggiornaSchermo(T,players,output);
                         }
@@ -707,16 +704,15 @@ int main(int argc, char *argv[])
                                     }
                                     catch (const Giocatore::Player_Lost& e)
                                     {
-                                        std::cout << e.s;
                                         std::this_thread::sleep_for(std::chrono::seconds(pausa));
-                                        output += e.s + "Giocatore " + std::to_string(players[i]->getID()) + " e' andato in bancarotta e ha perso.\n";
+                                        output += "Giocatore " + std::to_string(players[i]->getID()) + " e' andato in bancarotta e ha perso.\n";
                                         players[i]->getPosition()->removePlayer(players[i]->getID());
                                     }
                                 }
                             }
                             aggiornaSchermo(T,players,output);
                             if (players[i]->isInGame())
-                                std::cout << "Giocatore " << players[i]->getID() << " ha pagato " << players.size()*50 << " " + Variabili::getValuta() + ".\n";
+                                std::cout << "Giocatore " << players[i]->getID() << " ha pagato " << (players.size()-1)*50 << " " + Variabili::getValuta() + ".\n";
                         break;
                         
                         case 14:
@@ -761,9 +757,8 @@ int main(int argc, char *argv[])
                         }
                         catch (const Giocatore::Player_Lost& e)
                         {
-                            std::cout << e.s;
                             std::this_thread::sleep_for(std::chrono::seconds(pausa));
-                            output += e.s + "Giocatore " + std::to_string(players[i]->getID()) + " e' andato in bancarotta e ha perso.\n";
+                            output += "Giocatore " + std::to_string(players[i]->getID()) + " e' andato in bancarotta e ha perso.\n";
                             players[i]->getPosition()->removePlayer(players[i]->getID());
                             aggiornaSchermo(T,players,output);
                         }
@@ -823,11 +818,11 @@ int main(int argc, char *argv[])
                         {
                             if (pos1->isAlbergo()) // se dopo l'acquisto c'è un albergo
                             {
-                                output += "Giocatore " + std::to_string(players[i]->getID()) + " ha pagato " + std::to_string(prezzo) + " " + Variabili::getValuta() + " e ha acquistato un albergo in tutte le proprieta' di colore " + pos1->getColor() + ".\n";
+                                output += "Giocatore " + std::to_string(players[i]->getID()) + " ha pagato " + std::to_string(prezzo) + " " + Variabili::getValuta() + " e ha acquistato nelle proprieta' di colore " + pos1->getColor() + ".\n";
                             }
                             else  // se dopo l'acquisto non c'è un albergo, allora c'è una casa
                             {
-                                output += "Giocatore " + std::to_string(players[i]->getID()) + " ha pagato " + std::to_string(prezzo) + " " + Variabili::getValuta() + " e ha acquistato una casa in tutte le proprieta' di colore " + pos1->getColor() + ".\n";
+                                output += "Giocatore " + std::to_string(players[i]->getID()) + " ha pagato " + std::to_string(prezzo) + " " + Variabili::getValuta() + " e ha acquistato nelle proprieta' di colore " + pos1->getColor() + ".\n";
                             }
                         }
                         else
@@ -863,6 +858,8 @@ int main(int argc, char *argv[])
                     {
                         if(pos1->getProprietario() == nullptr)
                             sold = false;
+                        else
+                            std::cout << "Non succede nulla.\n";
                     }
                 }
             // Se il proprietario sono io, ma non posso decidere di costruire nulla perche non ho tutte le caselle simili
@@ -932,9 +929,8 @@ int main(int argc, char *argv[])
                     }
                     catch (const Giocatore::Player_Lost& e)
                     {
-                        std::cout << e.s;
                         std::this_thread::sleep_for(std::chrono::seconds(pausa));
-                        output += e.s + "Giocatore " + std::to_string(players[i]->getID()) + " e' andato in bancarotta e ha perso.\n";
+                        output += "Giocatore " + std::to_string(players[i]->getID()) + " e' andato in bancarotta e ha perso.\n";
                         players[i]->getPosition()->removePlayer(players[i]->getID()); // Rimozione dal tabellone del giocatore dalla casella vecchia
                     }
                     aggiornaSchermo(T,players,output);
@@ -1030,9 +1026,8 @@ int main(int argc, char *argv[])
                     }
                     catch (const Giocatore::Player_Lost& e)
                     {
-                        std::cout << e.s;
                         std::this_thread::sleep_for(std::chrono::seconds(pausa));
-                        output += e.s + "Giocatore " + std::to_string(players[i]->getID()) + " e' andato in bancarotta e ha perso.\n";
+                        output += "Giocatore " + std::to_string(players[i]->getID()) + " e' andato in bancarotta e ha perso.\n";
                         players[i]->getPosition()->removePlayer(players[i]->getID()); // Rimozione dal tabellone del giocatore dalla casella vecchia
                     }
                     aggiornaSchermo(T,players,output);
@@ -1050,9 +1045,8 @@ int main(int argc, char *argv[])
                 }
                 catch (const Giocatore::Player_Lost& e)
                 {
-                    std::cout << e.s;
                     std::this_thread::sleep_for(std::chrono::seconds(pausa));
-                    output += e.s + "Giocatore " + std::to_string(players[i]->getID()) + " e' andato in bancarotta e ha perso.\n";
+                    output += "Giocatore " + std::to_string(players[i]->getID()) + " e' andato in bancarotta e ha perso.\n";
                     players[i]->getPosition()->removePlayer(players[i]->getID()); // Rimozione dal tabellone del giocatore dalla casella vecchia
                 }
                 aggiornaSchermo(T,players,output);
@@ -1140,9 +1134,8 @@ int main(int argc, char *argv[])
                     }
                     catch (const Giocatore::Player_Lost& e)
                     {
-                        std::cout << e.s;
                         std::this_thread::sleep_for(std::chrono::seconds(pausa));
-                        output += e.s + "Giocatore " + std::to_string(players[i]->getID()) + " e' andato in bancarotta e ha perso.\n";
+                        output += "Giocatore " + std::to_string(players[i]->getID()) + " e' andato in bancarotta e ha perso.\n";
                         players[i]->getPosition()->removePlayer(players[i]->getID()); // Rimozione dal tabellone del giocatore dalla casella vecchia
                     }
                     aggiornaSchermo(T,players,output);
@@ -1195,8 +1188,8 @@ int main(int argc, char *argv[])
             {
                 std::string hey ="\n" + muro;
                 aggiornaSchermo(T,players,hey);
-                hey += "\nGiocatore " + std::to_string(players[i]->getID()) + " non ha acquistato " + players[i]->getPosition()->getName() + ", quindi inizia l'asta.";
-                std::cout << "\nGiocatore " << players[i]->getID() << " non ha acquistato " << players[i]->getPosition()->getName() << ", quindi inizia l'asta.";
+                hey += "\nGiocatore " + std::to_string(players[i]->getID()) + " non ha acquistato " + players[i]->getPosition()->getName() + ", quindi inizia l'asta.\n";
+                std::cout << "\nGiocatore " << players[i]->getID() << " non ha acquistato " << players[i]->getPosition()->getName() << ", quindi inizia l'asta.\n";
                 std::this_thread::sleep_for(std::chrono::seconds(pausa));
                 std::vector<Giocatore *> playersAsta;
                 bool noOneWants = true;
@@ -1219,7 +1212,7 @@ int main(int argc, char *argv[])
                 {
                     do
                     {
-                        std::cout << "\nAsta in corso\n";
+                        std::cout << "Asta in corso\n";
                         std::cout << "All'asta partecipano i seguenti giocatori:";
                         hey += "\nAsta in corso\nAll'asta partecipano i seguenti giocatori:";
                         for (int z=0; z < playersAsta.size(); z++)
