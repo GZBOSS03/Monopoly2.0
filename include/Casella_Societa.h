@@ -15,7 +15,7 @@ public:
     }
 
     // Funzioni Membro
-    int getPrezzo() const  { return _prezzo_terreno; }
+    int getPrezzo()  { return _prezzo_terreno; }
     void buy(Giocatore* g) { if (_proprietario == nullptr) _proprietario = g; }
     void reset() { _proprietario = nullptr; }
     Giocatore* getProprietario() const { return _proprietario; }

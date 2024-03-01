@@ -246,17 +246,6 @@ void Casella_Terreno::buy(Giocatore *g)
 {
     if (_proprietario == nullptr)      // Se la casella non è di nessuno, si procede all'acquisto del terreno
        _proprietario = g;
-    else
-    {// Tentativo di acquistare una casa/albergo su tutte le proprietà della famiglia
-        char target = _family;
-        for (int i=0; i< g->_elenco_proprieta.size(); i++)
-        {
-            if (g->_elenco_proprieta[i]->getFamily() == target && g->getMoney()>g->_elenco_proprieta[i]->getPrezzo()) // Se il terreno è della stessa famiglia della proprietà su cui è il giocatore
-            {
-                g->_elenco_proprieta[i]->build();
-            }
-        }
-    }
 }
 
 void Casella_Terreno::build()
@@ -328,9 +317,9 @@ int Casella_Terreno::getAffitto() const
 int Casella_Terreno::getPrezzo() const
 {
     if (_casa4 && _canBuy)
-        return _prezzo_albergo*_nForFamily;
+        return _prezzo_albergo;
     if (!_casa4 && _canBuy)
-        return _prezzo_casa*_nForFamily;
+        return _prezzo_casa;
     // if (_proprietario == nullptr)
     return _prezzo_terreno;
 }

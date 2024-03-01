@@ -16,7 +16,7 @@ bool Computer::choice(std::string* p){
         }
         else                                            // se invece ha soldi allora fa la scelta
         {
-            if(distr(gen) <= Variabili::probabilitaSiExitJail)
+            if(distr(gen) <= Variabili::probabilitaSiExitJail || _money > Variabili::initialMoney)
             {
                 std::cout << "Giocatore " << _ID << " vuole uscire di prigione ora.\n";
                 *p += "Giocatore " + std::to_string(_ID) + " vuole uscire di prigione ora.\n";
@@ -30,12 +30,7 @@ bool Computer::choice(std::string* p){
             }
         }
     }
-// Scelta acquisto di una casella
-    if (_money > Variabili::initialMoney)    // Se ha più soldi di quelli che aveva ad inizio partita
-    {
-        *p += "Giocatore " + std::to_string(_ID) + " e' pieno di soldi.\n";
-        return true;
-    }
+    
 // Scelta acquisto stazione (della banca)
     Casella_Stazione* st = dynamic_cast<Casella_Stazione*> (_pos);
     if(st)  // Se il computer si trova in una stazione e ne possiede almeno una
@@ -45,7 +40,7 @@ bool Computer::choice(std::string* p){
             *p += "Giocatore " + std::to_string(_ID) + " non ha abbastanza " + Variabili::getValuta() + " per l'acquisto di " + st->getName() + ".\n";
             return false;
         }
-        else if (!_elenco_proprieta_st.empty())
+        else if (!_elenco_proprieta_st.empty() || _money > Variabili::initialMoney)
         {
             *p += "Giocatore " + std::to_string(_ID) + " vuole comprare " + _pos->getName() + " (perche' possiede gia' altre stazioni).\n";
             return true;
@@ -61,63 +56,37 @@ bool Computer::choice(std::string* p){
             *p += "Giocatore " + std::to_string(_ID) + " non ha abbastanza " + Variabili::getValuta() + " per l'acquisto di " + so->getName() + ".\n";
             return false;
         }
-        else if (!_elenco_proprieta_soc.empty())
+        else if (!_elenco_proprieta_soc.empty() || _money > Variabili::initialMoney)
         {
             *p += "Giocatore " + std::to_string(_ID) + " vuole comprare " + _pos->getName() + " (perche' possiede gia' l'altra societa').\n";
             return true;
         }
     }
 
-// Scelta se acquistare case/alberghi in terreni di proprietà con canbuy = true
+// Scelta acquisto terreno (della banca)
     Casella_Terreno* a = dynamic_cast<Casella_Terreno*> (_pos);
-    if (a)
+    if(a)  // Se il computer deve scegliere di acquistare un terreno
     {
-        if (a->canBuy())
+        if (_money < a->getPrezzoTerreno())    // Se non può acquistarlo
         {
-            if (_money < a->getPrezzo())
-            {
-                *p += "Giocatore " + std::to_string(_ID) + " non ha abbastanza " + Variabili::getValuta() + " per l'acquisto di ";
-                if (a->isCasa4())
-                    *p += "alberghi";
-                else
-                    *p += "case";
-                *p += " nei terreni di colore " + a->getColor() + ".\n";
-                return false;
-            }
-            else
-            {
-                *p += "Giocatore " + std::to_string(_ID) + " vuole costruire (perche' possiede gia' tutti i terreni di colore " +  a->getColor() + ").\n";
-                return true;    // Il computer vuole sempre comprare case/alberghi se può
-            }
+            *p += "Giocatore " + std::to_string(_ID) + " non ha abbastanza " + Variabili::getValuta() + " per l'acquisto di " + a->getName() + ".\n";
+            return false;
         }
-
-// Scelta acquisto terreno se della banca
-        if(!a->getProprietario())  // Se il computer deve scegliere di acquistare un terreno
+        // Cerca tra le sue proprietà se ce ne sono dello stesso colore/famiglia
+        for (int i=0; i < _elenco_proprieta.size(); i++)
         {
-            if (_money < a->getPrezzoTerreno())    // Se non può acquistarlo
+            // Se il computer ne trova almeno una, allora compra il terreno
+            if (_elenco_proprieta[i]->getFamily() == a->getFamily())
             {
-                *p += "Giocatore " + std::to_string(_ID) + " non ha abbastanza " + Variabili::getValuta() + " per l'acquisto di " + a->getName() + ".\n";
-                return false;
-            }
-            else
-            {
-                // Cerca tra le sue proprietà se ce ne sono dello stesso colore/famiglia
-                for (int i=0; i < _elenco_proprieta.size(); i++)
-                {
-                    // Se il computer ne trova almeno una, allora compra il terreno
-                    if (_elenco_proprieta[i]->getFamily() == a->getFamily())
-                    {
-                        *p += "Giocatore " + std::to_string(_ID) + " vuole comprare " + _pos->getName() + " (perche' ha gia' altri terreni di colore " +  a->getColor() + ").\n";
-                        return true;
-                    }
-                }
+                *p += "Giocatore " + std::to_string(_ID) + " vuole comprare " + _pos->getName() + " (perche' ha gia' altri terreni di colore " +  a->getColor() + ").\n";
+                return true;
             }
         }
     }
 
     bool b = false;
     std::string toAdd = "Giocatore " + std::to_string(_ID);
-    if (distr(gen) <= Variabili::probabilitaSiFirstAcquisto)
+    if (distr(gen) <= Variabili::probabilitaSiFirstAcquisto || _money > Variabili::initialMoney)
     {
         b=true;
         toAdd += " vuole comprare ";
@@ -228,7 +197,7 @@ void Computer::Transaction(int n, Giocatore *Other, std::string *output){
     }
     catch (const Giocatore::Not_Enough_Money &e)
     {
-        int pausa = 2;  // Pausa del programma tra una stampa e un'altra
+        int pausa = Variabili::pausa;  // Pausa del programma tra una stampa e un'altra
         // Vediamo se c'è qualcosa da ipotecare:
         std::cout << "Giocatore " << _ID << " non ha abbastanza " << Variabili::getValuta() << " per pagare e deve ipotecare qualcosa.\n";
         std::string init = "Giocatore " + std::to_string(_ID) + " non ha abbastanza " + Variabili::getValuta() + " per pagare e ipoteca:\n";
@@ -340,7 +309,6 @@ void Computer::Transaction(int n, Giocatore *Other, std::string *output){
                             }
                             else
                                 std::cout << ", abbastanza per pagare.\n";
-                            std::this_thread::sleep_for(std::chrono::seconds(pausa));
                         }
                     }
                     else
@@ -361,6 +329,18 @@ void Computer::Transaction(int n, Giocatore *Other, std::string *output){
                         else
                             std::cout << ", abbastanza per pagare.\n";
                         std::this_thread::sleep_for(std::chrono::seconds(pausa));
+                        if (_elenco_proprieta[i]->canBuy()) // Se il giocatore aveva tutte le proprietà del colore di quella ipotecata
+                        {
+                            for (int x=0; x < _elenco_proprieta_to_build.size(); x++)
+                            {
+                                if (_elenco_proprieta_to_build[x]->getFamily() == _elenco_proprieta[i]->getFamily())
+                                {
+                                    _elenco_proprieta_to_build[x]->setCanBuy(false);    // Per ciascun terreno della stessa famiglia di quello che ho appena ipotecato setto canBuy a false
+                                    _elenco_proprieta_to_build.erase(_elenco_proprieta_to_build.begin() + x); // e li tolgo dal vettore _elenco_proprieta_to_build
+                                    x--;
+                                }
+                            }
+                        }
                         _elenco_proprieta[i]->reset();
                         _elenco_proprieta.erase(_elenco_proprieta.begin() + i);
                         i--;
@@ -403,6 +383,12 @@ void Computer::Transaction(int n, Giocatore *Other, std::string *output){
         this->pay(n);
         *output += *toAdd;
     }
+}
+
+bool Computer::wantToBuild(std::string* p, Casella_Terreno* A){
+    if (_money < 500) // Se il giocatore non ha abbastanza soldi per costruire
+        return false;
+    return true;
 }
 
 Giocatore& Computer::operator=(Computer* g){

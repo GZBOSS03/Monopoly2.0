@@ -13,6 +13,7 @@ public:
     Giocatore& operator=(Computer* g);
 
     bool choice(std::string*) override;
+    bool wantToBuild(std::string*, Casella_Terreno*) override;
     bool partecipaAsta(int*, Casella*, bool, int) override;
     void Transaction(int, Giocatore *, std::string *) override;
 };

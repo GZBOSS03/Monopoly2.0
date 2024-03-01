@@ -29,14 +29,11 @@ void Giocatore::buy(){
     Casella_Terreno *_pos1 = dynamic_cast<Casella_Terreno *>(_pos);
     if (_pos1)
     {
-        pay(_pos1->getPrezzo());
+        pay(_pos1->getPrezzoTerreno());
         _pos1->buy(this);                                           // buy di Casella Laterale setta le sue cose
-        if (!_pos1->isCasa1() && (_pos1->getProprietario() == this)) // Se è avvenuto l'acquisto del terreno (non c'è una casa e il proprietario è il giocatore)
-        {
-            _elenco_proprieta.push_back(_pos1);                     // aggiungo il terreno alla lista di proprietà
-            // Ordinamento del vector utilizzando il predicato personalizzato
-            std::sort(_elenco_proprieta.begin(), _elenco_proprieta.end(), confrontaElementi);
-        }
+        _elenco_proprieta.push_back(_pos1);                         // aggiungo il terreno alla lista di proprietà
+        // Ordinamento del vector utilizzando il predicato personalizzato
+        std::sort(_elenco_proprieta.begin(), _elenco_proprieta.end(), confrontaElementi);
     }
 
     // Si effettua il cast della posizione
@@ -264,11 +261,11 @@ std::ostream &operator<<(std::ostream &os, Giocatore G)
             s += ", ";
         }
     }
-    int h=0; // Contatore di andate a capo
+    int h=1; // Contatore di andate a capo
     for (int i = 0; i < G._elenco_proprieta.size(); i++)
     {   
         // Se l'elenco è troppo lungo e devo scrivere ancora, vado a capo
-        if ( s.length() + G._elenco_proprieta[i]->getName().size() > (Variabili::dimMaxOutput*(h+1)) )
+        if ( s.length() + G._elenco_proprieta[i]->getName().size() > (Variabili::dimMaxOutput*h) )
         {
             os << "\n";
             h++;
@@ -291,8 +288,18 @@ std::ostream &operator<<(std::ostream &os, Giocatore G)
             os << GREEN;
         if (G._elenco_proprieta[i]->getFamily() == 'B')
             os << PURPLE;
+
         // Stampa del nome
-        os << G._elenco_proprieta[i]->getName() << RESET;
+        // Se ho tutte le caselle dello stesso colore le sottolineo in output
+        if (G._elenco_proprieta[i]->canBuy())
+        {   
+            // Utilizza una std::ostringstream per formattare il testo
+            std::ostringstream playerFormatted;
+            playerFormatted << "\033[4m" << G._elenco_proprieta[i]->getName() << "\033[0m" << RESET;
+            os << std::setw(10) << playerFormatted.str();
+        }
+        else
+            os << G._elenco_proprieta[i]->getName() << RESET;
         s += G._elenco_proprieta[i]->getName();
 
         if (i+1 != G._elenco_proprieta.size())

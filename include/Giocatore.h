@@ -18,9 +18,12 @@ public:
 
     Giocatore &operator=(Giocatore *);
 
-    // Funzioni membro
+    // Scelte del giocatore
     virtual bool choice(std::string*) { return false; }; // Il giocatore sceglie se comprare (return true) o no (return false)
     virtual bool partecipaAsta(int*, Casella*, bool, int) { return false; }; // Il giocatore sceglie se comprare (return true) o no (return false)
+    virtual bool wantToBuild (std::string*, Casella_Terreno*) { return true; };
+
+    // Funzioni membro
     void buy(); // Effettua l'acquisto della casella su cui il giocatore si trova
     void buy(int, Casella*); // Effettua l'acquisto della casella passata con il prezzo passato (usato nelle aste)
     void move(int);
@@ -65,6 +68,7 @@ public:
 
     // Variabili oggetto di giocatore
     std::vector<Casella_Terreno *> _elenco_proprieta;
+    std::vector<Casella_Terreno *> _elenco_proprieta_to_build;  // Proprietà dove il giocatore può costruire case/alberghi
     std::vector<Casella_Stazione *> _elenco_proprieta_st;
     std::vector<Casella_Societa *> _elenco_proprieta_soc;
 protected:

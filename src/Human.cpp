@@ -103,6 +103,44 @@ bool Human::choice(std::string* p){
     return false; // Non lo farà mai perchè ritorna nel do while quando l'utente inserisce S o N
 }
 
+bool Human::wantToBuild(std::string* p, Casella_Terreno* A){
+    
+    if (_money < A->getPrezzo()) // Se il giocatore non ha abbastanza soldi per costruire
+        return false;
+    std::string tmp = "una casa in ";
+    if (A->isCasa4())
+        tmp = "un albergo in ";
+    std:: cout << "Giocatore " + std::to_string(_ID) + ", vuoi acquistare " + tmp + A->getName() + " per " << A->getPrezzo() << " " << Variabili::getValuta() + ".\n";
+    *p += "Giocatore " + std::to_string(_ID) + ", vuoi acquistare " + tmp + A->getName() + " per " + std::to_string(A->getPrezzo()) + " " + Variabili::getValuta() + ".\n";
+    do
+    {
+        char risposta;
+        std::cin >> risposta;
+        if (risposta == 'S' || risposta == 's')
+        {
+            if (risposta == 'S')
+                *p += "S\n";
+            else
+                *p += "s\n";
+            return true;
+        }
+        else if (risposta == 'N' || risposta == 'n')
+        {
+            if (risposta == 'N')
+                *p += "N\n";
+            else
+                *p += "n\n";
+            if (_isInJail)
+            {
+                std::cout << "Giocatore " + std::to_string(_ID) + " vuole tentare la sorte con i dadi.\n";
+                *p += "Giocatore " + std::to_string(_ID) + " vuole tentare la sorte con i dadi.\n";
+            }
+            return false;
+        } else
+            std::cout << "Comando non riconosciuto (Inserire S per si, N per no)\n";
+    } while (true);
+}
+
 bool Human::partecipaAsta(int* p, Casella*, bool, int minimaOffertaAsta){
 
     int rilancio = 0;
@@ -160,7 +198,7 @@ void Human::Transaction(int n, Giocatore *Other, std::string *output){
     }
     catch (const Giocatore::Not_Enough_Money &e)
     {
-        int pausa = 2;  // Pausa del programma tra una stampa e un'altra
+        int pausa = Variabili::pausa;  // Pausa del programma tra una stampa e un'altra
         // Vediamo se c'è qualcosa da ipotecare:
         std::cout << "Giocatore " << _ID << " non ha abbastanza " << Variabili::getValuta() << " per pagare e deve ipotecare qualcosa.\n";
         std::string init = "Giocatore " + std::to_string(_ID) + " non ha abbastanza " + Variabili::getValuta() + " per pagare e ipoteca:\n";
@@ -427,6 +465,18 @@ void Human::Transaction(int n, Giocatore *Other, std::string *output){
                                     _elenco_proprieta[i]->ipoteca();
                                 else
                                 {
+                                    if (_elenco_proprieta[i]->canBuy()) // Se il giocatore aveva tutte le proprietà del colore di quella ipotecata
+                                    {
+                                        for (int x=0; x < _elenco_proprieta_to_build.size(); x++)
+                                        {
+                                            if (_elenco_proprieta_to_build[x]->getFamily() == _elenco_proprieta[i]->getFamily())
+                                            {
+                                                _elenco_proprieta_to_build[x]->setCanBuy(false);    // Per ciascun terreno della stessa famiglia di quello che ho appena ipotecato setto canBuy a false
+                                                _elenco_proprieta_to_build.erase(_elenco_proprieta_to_build.begin() + x); // e li tolgo dal vettore _elenco_proprieta_to_build
+                                                x--;
+                                            }
+                                        }
+                                    }
                                     _elenco_proprieta[i]->reset();
                                     _elenco_proprieta.erase(_elenco_proprieta.begin() + i);
                                     i--;
