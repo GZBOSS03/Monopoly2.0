@@ -331,12 +331,9 @@ int Casella_Terreno::getAffitto() const
 
 int Casella_Terreno::getPrezzo() const
 {
-    if (_casa4 && _canBuy)
+    if (_casa4)
         return _prezzo_albergo;
-    if (!_casa4 && _canBuy)
-        return _prezzo_casa;
-    // if (_proprietario == nullptr)
-    return _prezzo_terreno;
+    return _prezzo_casa;
 }
 
 std::string Casella_Terreno::getColor() const

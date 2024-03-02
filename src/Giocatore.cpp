@@ -24,6 +24,16 @@ void Giocatore::setPos(Casella* P){
     _pos->addPlayer(_ID);
 }
 
+void Giocatore::pushInToBuild(Casella_Terreno* A){
+    if (A)
+    {
+        _elenco_proprieta_to_build.push_back(A);
+        std::sort(_elenco_proprieta_to_build.begin(), _elenco_proprieta_to_build.end(), confrontaElementi);
+    }
+    else
+        std::cout << "Puntatore non valido.\n";
+}
+    
 void Giocatore::buy(){
     // Si effettua il cast della posizione
     Casella_Terreno *_pos1 = dynamic_cast<Casella_Terreno *>(_pos);
@@ -235,9 +245,6 @@ std::string Giocatore::getToBuild()
 bool confrontaElementi(const Casella_Terreno* elem1, const Casella_Terreno* elem2) {
     return elem1->getPrezzoTerreno() <= elem2->getPrezzoTerreno();
 }
-bool confrontaElementiCanBuy(const Casella_Terreno* elem1, const Casella_Terreno* elem2) {
-    return elem1->canBuy() < elem2->canBuy();
-}
 
 std::ostream &operator<<(std::ostream &os, Giocatore G)
 {
@@ -300,12 +307,15 @@ std::ostream &operator<<(std::ostream &os, Giocatore G)
             os << PURPLE;
 
         // Stampa del nome
-        // Se ho tutte le caselle dello stesso colore le sottolineo in output
+        // Se ho tutte le caselle dello stesso colore le sottolineo in output (se ci posso costruire)
         if (G._elenco_proprieta[i]->canBuy())
         {   
             // Utilizza una std::ostringstream per formattare il testo
             std::ostringstream playerFormatted;
-            playerFormatted << "\033[4m" << G._elenco_proprieta[i]->getName() << "\033[0m" << RESET;
+            if (G._elenco_proprieta[i]->isAlbergo())
+                playerFormatted << "\033[1m" << G._elenco_proprieta[i]->getName() << "\033[0m" << RESET;    // Grassetto
+            else
+                playerFormatted << "\033[4m" << G._elenco_proprieta[i]->getName() << "\033[0m" << RESET;    // Sottolineato
             os << std::setw(10) << playerFormatted.str();
         }
         else

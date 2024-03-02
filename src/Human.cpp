@@ -14,8 +14,8 @@ bool Human::choice(std::string* p){
             *p += "Giocatore " + std::to_string(_ID) + " non ha abbastanza " + Variabili::getValuta() + " per l'acquisto.\n";
             return false;
         }
-        std::cout << "Giocatore " << _ID << " vuoi comprare " << posNow->getName() << " per " << posNow->getPrezzo() << "? (Inserire S per si, N per no)\n";
-        *p += "Giocatore " + std::to_string(_ID) + " vuoi comprare " + posNow->getName() + " per " + std::to_string(posNow->getPrezzo()) + "? (Inserire S per si, N per no)\n";
+        std::cout << "Giocatore " << _ID << " vuoi comprare " << posNow->getName() << " per " << posNow->getPrezzoTerreno() << "? (Inserire S per si, N per no)\n";
+        *p += "Giocatore " + std::to_string(_ID) + " vuoi comprare " + posNow->getName() + " per " + std::to_string(posNow->getPrezzoTerreno()) + "? (Inserire S per si, N per no)\n";
     }
     
     if (posNow1)
@@ -116,6 +116,7 @@ bool Human::partecipaAsta(int* p, Casella*, bool, int minimaOffertaAsta){
     if (_money <= *p + minimaOffertaAsta)
     {
         std::cout << "Giocatore " << _ID << " non ha abbastanza " << Variabili::getValuta() << " per rilanciare.\n";
+        std::this_thread::sleep_for(std::chrono::seconds(Variabili::pausa));
         return false;
     }
     else
@@ -171,12 +172,12 @@ void Human::Transaction(int n, Giocatore *Other, std::string *output){
         // Vediamo se c'è qualcosa da ipotecare:
         std::cout << "Giocatore " << _ID << " non ha abbastanza " << Variabili::getValuta() << " per pagare e deve ipotecare qualcosa.\n";
         std::string init = "Giocatore " + std::to_string(_ID) + " non ha abbastanza " + Variabili::getValuta() + " per pagare e ipoteca:\n";
+            std::this_thread::sleep_for(std::chrono::seconds(pausa));
         std::string *toAdd = &init;
         if (FreeExitPrisonImpr)
         {
             setFreeExitPrisonImpr(false);
             deposit(50);
-            std::this_thread::sleep_for(std::chrono::seconds(pausa));
             std::cout << "Venduta carta imprevisto uscita gratis di prigione alla banca, ricavati: 50 " << Variabili::getValuta() << ".\n";
             *toAdd += "- carta imprevisto uscita gratis di prigione (50)\n";
             std::this_thread::sleep_for(std::chrono::seconds(pausa));
@@ -185,12 +186,12 @@ void Human::Transaction(int n, Giocatore *Other, std::string *output){
                 std::cout << ", ma ancora non bastano.\n";
             else
                 std::cout << ", abbastanza per pagare.\n";
+            std::this_thread::sleep_for(std::chrono::seconds(pausa));
         }
         if (FreeExitPrisonProb && _money<n)
         {
             setFreeExitPrisonProb(false);
             deposit(50);
-            std::this_thread::sleep_for(std::chrono::seconds(pausa));
             std::cout << "Venduta carta probabilita' uscita gratis di prigione alla banca, ricavati: 50 " << Variabili::getValuta() << ".\n";
             *toAdd += "- carta probabilita' uscita gratis di prigione (50)\n";
             std::this_thread::sleep_for(std::chrono::seconds(pausa));
@@ -199,13 +200,13 @@ void Human::Transaction(int n, Giocatore *Other, std::string *output){
                 std::cout << ", ma ancora non bastano.\n";
             else
                 std::cout << ", abbastanza per pagare.\n";
+            std::this_thread::sleep_for(std::chrono::seconds(pausa));
         }
 
         while (_money < n)   // Finché il giocatore non ha abbastanza soldi per pagare
         {
             // Richiesta all'utente di quale tipo di casella egli voglia ipotecare (se non ha nulla da ipotecare perde)
             char risposta;
-            std::this_thread::sleep_for(std::chrono::seconds(pausa));
             if (_elenco_proprieta_soc.size() > 0 && _elenco_proprieta_st.size() > 0 && _elenco_proprieta.size() > 0)
             {
                 std::cout << "Cosa vuoi ipotecare: inserire T per i terreni, C per le Societa', S per le Stazioni:\n";
@@ -280,23 +281,17 @@ void Human::Transaction(int n, Giocatore *Other, std::string *output){
             }
             else if (_elenco_proprieta_soc.size() > 0 && _elenco_proprieta_st.size() == 0 && _elenco_proprieta.size() == 0)
             {
-                std::cout << "Giocatore " << _ID << " ha solo societa'.\n";
-                std::this_thread::sleep_for(std::chrono::seconds(pausa));
                 risposta = 'C';
             }
             else if (_elenco_proprieta_soc.size() == 0 && _elenco_proprieta_st.size() > 0 && _elenco_proprieta.size() == 0)
             {
-                std::cout << "Giocatore " << _ID << " ha solo stazioni.\n";
-                std::this_thread::sleep_for(std::chrono::seconds(pausa));
                 risposta = 'S';
             }
             else if (_elenco_proprieta_soc.size() == 0 && _elenco_proprieta_st.size() == 0 && _elenco_proprieta.size() > 0)
             {
-                std::cout << "Giocatore " << _ID << " ha solo terreni.\n";
-                std::this_thread::sleep_for(std::chrono::seconds(pausa));
                 risposta = 'T';
             }
-            else if(_elenco_proprieta.empty() && _elenco_proprieta_st.empty() && _elenco_proprieta_soc.empty())
+            else if (_elenco_proprieta.empty() && _elenco_proprieta_st.empty() && _elenco_proprieta_soc.empty() && _money<n)
             {
                 // Se il giocatore non ha più nulla da ipotecare, paga tutti i soldi che ha ...
                 std::cout << "Giocatore " + std::to_string(_ID) + " non ha piu nulla da ipotecare e non riesce a pagare.\n";
@@ -329,7 +324,7 @@ void Human::Transaction(int n, Giocatore *Other, std::string *output){
                 {
                     if (_money < n)
                     {
-                        std::cout << "Vuoi ipotecare " << _elenco_proprieta_soc[i]->getName() << "?\n";
+                        std::cout << "Vuoi ipotecare " << _elenco_proprieta_soc[i]->getName() << "? (Inserire S per si, N per no)\n";
                         bool done = false;
                         do
                         {
@@ -369,7 +364,7 @@ void Human::Transaction(int n, Giocatore *Other, std::string *output){
                 {
                     if (_money < n)
                     {
-                        std::cout << "Vuoi ipotecare " << _elenco_proprieta_st[i]->getName() << "?\n";
+                        std::cout << "Vuoi ipotecare " << _elenco_proprieta_st[i]->getName() << "? (Inserire S per si, N per no)\n";
                         bool done = false;
                         do
                         {
@@ -393,9 +388,9 @@ void Human::Transaction(int n, Giocatore *Other, std::string *output){
                             }
                             else if (gg == 'N' || gg == 'n')
                             {
-                                std::cout << "Giocatore " << _ID << " non ha ipotecato " << _elenco_proprieta_st[i]->getName() << ".\n";
                                 done = true;
-                            } else
+                            }
+                            else
                                 std::cout << "Comando non riconosciuto (Inserire S per si, N per no)\n";
                         } while (!done);
                     }
@@ -405,18 +400,55 @@ void Human::Transaction(int n, Giocatore *Other, std::string *output){
             }
             if (risposta == 'T' || risposta == 't') // Terreno
             {
-                // Ordinamento del vector utilizzando il predicato personalizzato
-                std::sort(_elenco_proprieta.begin(), _elenco_proprieta.end(), confrontaElementiCanBuy);
+                if (!_elenco_proprieta_to_build.empty())
+                {
+                    for (int i=0; i < _elenco_proprieta_to_build.size(); i++)
+                    {
+                        if (_money < n)
+                        {
+                            if (_elenco_proprieta_to_build[i]->isCasa1())
+                            {
+                                std::string s = " una casa in ";
+                                if (_elenco_proprieta_to_build[i]->isAlbergo())
+                                    s = " l'albergo in ";
+                                std::cout << "Vuoi ipotecare" << s << _elenco_proprieta_to_build[i]->getName() << "? (Inserire S per si, N per no)\n";
+                                bool done = false;
+                                do
+                                {
+                                    char gg;
+                                    std::cin >> gg;
+                                    if (gg == 'S' || gg == 's')
+                                    {
+                                        int schei = _elenco_proprieta_to_build[i]->getPrezzo()/2;
+                                        std::cout << "Giocatore " << _ID << " ha ipotecato" << s << _elenco_proprieta_to_build[i]->getName() << " e ha ricavato " << schei << " " << Variabili::getValuta() << ".\n";
+                                        *toAdd += "-" + s + _elenco_proprieta_to_build[i]->getName() + " (" + std::to_string(schei) + ")\n";
+                                        deposit(schei);
+                                        _elenco_proprieta_to_build[i]->ipoteca();
+                                        _elenco_proprieta_to_build[i]->changeCanBuy();                                
+                                        std::this_thread::sleep_for(std::chrono::seconds(pausa));
+                                        std::cout << "Giocatore " << _ID << " ora ha " << _money << " " << Variabili::getValuta();
+                                        if (_money < n)
+                                            std::cout << ", ma ancora non bastano.\n";
+                                        else
+                                            std::cout << ", abbastanza per pagare.\n";
+                                        done = true;
+                                    }
+                                    else if (gg == 'N' || gg == 'n')
+                                    {
+                                        done = true;
+                                    } else
+                                        std::cout << "Comando non riconosciuto (Inserire S per si, N per no)\n";
+                                } while (!done);
+                                
+                            }
+                        }
+                    }
+                }
                 for (int i=0; i < _elenco_proprieta.size(); i++)
                 {
                     if (_money < n)
                     {
-                        std::string k = " ";
-                        if (_elenco_proprieta[i]->isAlbergo())
-                            k = " l'albergo in ";
-                        else if (_elenco_proprieta[i]->isCasa1())
-                            k = " una casa in ";
-                        std::cout << "Vuoi ipotecare" << k << _elenco_proprieta[i]->getName() << "?\n";
+                        std::cout << "Vuoi ipotecare " << _elenco_proprieta[i]->getName() << "? (Inserire S per si, N per no)\n";
                         bool done = false;
                         do
                         {
@@ -424,30 +456,26 @@ void Human::Transaction(int n, Giocatore *Other, std::string *output){
                             std::cin >> gg;
                             if (gg == 'S' || gg == 's')
                             {
-                                int schei = _elenco_proprieta[i]->getPrezzo()/2;
-                                std::cout << "Giocatore " << _ID << " ha ipotecato" << k << _elenco_proprieta[i]->getName() << " e ha ricavato " << schei << " " << Variabili::getValuta() << ".\n";
-                                *toAdd += "-" + k + _elenco_proprieta[i]->getName() + " (" + std::to_string(schei) + ")\n";
+                                int schei = _elenco_proprieta[i]->getPrezzoTerreno()/2;
+                                std::cout << "Giocatore " << _ID << " ha ipotecato " << _elenco_proprieta[i]->getName() << " e ha ricavato " << schei << " " << Variabili::getValuta() << ".\n";
+                                *toAdd += "-" + _elenco_proprieta[i]->getName() + " (" + std::to_string(schei) + ")\n";
                                 deposit(schei);
-                                if (_elenco_proprieta[i]->isCasa1())
-                                    _elenco_proprieta[i]->ipoteca();
-                                else
+                                if (_elenco_proprieta[i]->canBuy()) // Se il giocatore aveva tutte le proprietà del colore di quella ipotecata
                                 {
-                                    if (_elenco_proprieta[i]->canBuy()) // Se il giocatore aveva tutte le proprietà del colore di quella ipotecata
+                                    for (int x=0; x < _elenco_proprieta_to_build.size(); x++)
                                     {
-                                        for (int x=0; x < _elenco_proprieta_to_build.size(); x++)
+                                        if (_elenco_proprieta_to_build[x]->getFamily() == _elenco_proprieta[i]->getFamily())
                                         {
-                                            if (_elenco_proprieta_to_build[x]->getFamily() == _elenco_proprieta[i]->getFamily())
-                                            {
-                                                _elenco_proprieta_to_build[x]->setCanBuy(false);    // Per ciascun terreno della stessa famiglia di quello che ho appena ipotecato setto canBuy a false
-                                                _elenco_proprieta_to_build.erase(_elenco_proprieta_to_build.begin() + x); // e li tolgo dal vettore _elenco_proprieta_to_build
-                                                x--;
-                                            }
+                                            _elenco_proprieta_to_build[x]->setCanBuy(false);    // Per ciascun terreno della stessa famiglia di quello che ho appena ipotecato setto canBuy a false
+                                            _elenco_proprieta_to_build.erase(_elenco_proprieta_to_build.begin() + x); // e li tolgo dal vettore _elenco_proprieta_to_build
+                                            x--;
                                         }
                                     }
-                                    _elenco_proprieta[i]->reset();
-                                    _elenco_proprieta.erase(_elenco_proprieta.begin() + i);
-                                    i--;
                                 }
+                                _elenco_proprieta[i]->reset();
+                                _elenco_proprieta.erase(_elenco_proprieta.begin() + i);
+                                i--;
+
                                 std::this_thread::sleep_for(std::chrono::seconds(pausa));
                                 std::cout << "Giocatore " << _ID << " ora ha " << _money << " " << Variabili::getValuta();
                                 if (_money < n)
@@ -458,14 +486,11 @@ void Human::Transaction(int n, Giocatore *Other, std::string *output){
                             }
                             else if (gg == 'N' || gg == 'n')
                             {
-                                std::cout << "Giocatore " << _ID << " non ha ipotecato" << k << _elenco_proprieta[i]->getName() << ".\n";
                                 done = true;
                             } else
                                 std::cout << "Comando non riconosciuto (Inserire S per si, N per no)\n";
                         } while (!done);
                     }
-                    else
-                        i=50;   // Per uscire dal ciclo (sono apposto e non devo più ipotecare)
                 }
             }
         }

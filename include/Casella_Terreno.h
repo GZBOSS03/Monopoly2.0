@@ -42,6 +42,7 @@ public:
     std::string getColor() const;
     
     // Funzioni SET
+    void changeCanBuy() { _canBuy = !_canBuy;       if (!_casa1) _canBuy = true; }
     void setCanBuy(bool t) { _canBuy = t; }
     void build();
     void ipoteca();

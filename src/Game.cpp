@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
     Tabellone T;                      // creo il tabellone
     std::vector<Giocatore *> players; // I giocatori che sono dentro players sono quelli che giocano, se un giocatore viene eliminato esce dal vettore
     std::vector<int> winner;          // Vettore che serve a fine partita, conterrà il/i vincitore/i
-
+    
 // Richiesta all'utente del numero di giocatori
     clearScreen();
     std::cout << muro << "\nBenvenuto/a, sta per iniziare una partita di Monopoly.";
@@ -98,6 +98,7 @@ int main(int argc, char *argv[])
     while (winner.empty())
     {
         j++; // aumento il conteggio dei turni
+        
 // Verifico che non siano passati troppi turni, altrimenti il gioco è in stallo, quindi finisce
         if ((j >= nMaxTurni))   // Arrivo al turno di gioco max per ogni giocatore, il gioco si ferma e vince chi ha più soldi
         {
@@ -151,10 +152,11 @@ int main(int argc, char *argv[])
             output += "\nInizio " + turno + " del giocatore " + std::to_string(players[i]->getID()) + ".\n";
             std::this_thread::sleep_for(std::chrono::seconds(pausa));
 
-// Il giocatore decide se comprare case/alberghi in proprietà dove può farlo
+
+// Il giocatore decide se comprare case/alberghi in proprietà se può farlo
         if (!players[i]->_elenco_proprieta_to_build.empty())
         {
-            bool playerCanBuild = true; // scelta se il giocatore vuole comprare case/alberghi
+            bool playerCanBuild = true; // se ci sono le condizioni per l'acquisto di case/alberghi
             if (players[i]->getMoney() < players[i]->_elenco_proprieta_to_build[0]->getPrezzo())
             {   // Se il giocatore non ha abbastanza soldi per comprare una casa/albergo
                 playerCanBuild = false;
@@ -197,28 +199,51 @@ int main(int argc, char *argv[])
                     {
                         if (!players[i]->_elenco_proprieta_to_build[l]->isAlbergo())    // Se non c'è ancora l'albergo si può costruire
                         {
-                            if (l != players[i]->_elenco_proprieta_to_build.size()-1)
+                            // Aggiorno tutte le proprietà se è possibile costruire o meno
+                            int luigi = 0;
+                            for (int h=0; h < players[i]->_elenco_proprieta_to_build.size(); h++)
                             {
-                                // Un giocatore non può costruire case/alberghi su una casella se in quella dopo non è alla pari
-                                if (players[i]->_elenco_proprieta_to_build[l]->getStatus() > players[i]->_elenco_proprieta_to_build[l+1]->getStatus() && players[i]->_elenco_proprieta_to_build[l]->getFamily() == players[i]->_elenco_proprieta_to_build[l+1]->getFamily())
+                                if (players[i]->_elenco_proprieta_to_build[l]->getFamily() == players[i]->_elenco_proprieta_to_build[h]->getFamily())
                                 {
-                                    continue;
+                                    if (players[i]->_elenco_proprieta_to_build[h]->getStatus() >= players[i]->_elenco_proprieta_to_build[l]->getStatus())
+                                    {
+                                        players[i]->_elenco_proprieta_to_build[h]->setCanBuy(false);
+                                        luigi++;
+                                    }
                                 }
                             }
+                            if (luigi == players[i]->_elenco_proprieta_to_build[l]->getNFamily())  // Se sono tutte con canbuy false, ciò significa che la costruzione è in pari, perciò (quelle della stessa famiglia) le re-setto tutte a true
+                            {
+                                for (int h=0; h < players[i]->_elenco_proprieta_to_build.size(); h++)
+                                {
+                                    if (players[i]->_elenco_proprieta_to_build[l]->getFamily() == players[i]->_elenco_proprieta_to_build[h]->getFamily())
+                                        players[i]->_elenco_proprieta_to_build[h]->setCanBuy(true);
+                                }
+                            }
+                            if (!players[i]->_elenco_proprieta_to_build[l]->canBuy()) // Se in questo terreno non posso comprare vado al prossima
+                                continue;
+                            
                             if (players[i]->wantToBuild(players[i]->_elenco_proprieta_to_build[l]))  // Il giocatore sceglie se comprare una casa/albergo (se non ha abbastanza soldi per l'acquisto restituisce false)
                             {
-                                players[i]->pay(players[i]->_elenco_proprieta_to_build[l]->getPrezzo());
-                                players[i]->_elenco_proprieta_to_build[l]->build();
-                                if (players[i]->_elenco_proprieta_to_build[l]->isAlbergo()) // se dopo l'acquisto c'è un albergo
+                                try
                                 {
-                                    output += "Giocatore " + std::to_string(players[i]->getID()) + " ha pagato " + std::to_string(players[i]->_elenco_proprieta_to_build[l]->getPrezzo()) + " " + Variabili::getValuta() + " e ha acquistato un albergo in " + players[i]->_elenco_proprieta_to_build[l]->getName() + ".\n";
+                                    players[i]->pay(players[i]->_elenco_proprieta_to_build[l]->getPrezzo());
+                                    players[i]->_elenco_proprieta_to_build[l]->build();
+                                    if (players[i]->_elenco_proprieta_to_build[l]->isAlbergo()) // se dopo l'acquisto c'è un albergo
+                                    {
+                                        output += "Giocatore " + std::to_string(players[i]->getID()) + " ha pagato " + std::to_string(players[i]->_elenco_proprieta_to_build[l]->getPrezzo()) + " " + Variabili::getValuta() + " e ha acquistato un albergo in " + players[i]->_elenco_proprieta_to_build[l]->getName() + ".\n";
+                                    }
+                                    else if (players[i]->_elenco_proprieta_to_build[l]->isCasa1())    // c'è una casa dopo l'acquisto, quindi dovro stampare ...
+                                    {
+                                        output += "Giocatore " + std::to_string(players[i]->getID()) + " ha pagato " + std::to_string(players[i]->_elenco_proprieta_to_build[l]->getPrezzo()) + " " + Variabili::getValuta() + " e ha acquistato una casa in " + players[i]->_elenco_proprieta_to_build[l]->getName() + ".\n";
+                                    }
+                                    aggiornaSchermo(T,players,output);
+                                    std::this_thread::sleep_for(std::chrono::seconds(pausa));
                                 }
-                                else if (players[i]->_elenco_proprieta_to_build[l]->isCasa1())    // c'è una casa dopo l'acquisto, quindi dovro stampare ...
+                                catch (const Giocatore::Not_Enough_Money& e)    // non dovrebbe mai lanciarla, ma meglio gestirla ...
                                 {
-                                    output += "Giocatore " + std::to_string(players[i]->getID()) + " ha pagato " + std::to_string(players[i]->_elenco_proprieta_to_build[l]->getPrezzo()) + " " + Variabili::getValuta() + " e ha acquistato una casa in " + players[i]->_elenco_proprieta_to_build[l]->getName() + ".\n";
+                                    // Non succede nulla
                                 }
-                                aggiornaSchermo(T,players,output);
-                                std::this_thread::sleep_for(std::chrono::seconds(pausa));
                             }
                         }
                     }
@@ -474,8 +499,21 @@ int main(int argc, char *argv[])
                             money = 25*counterCase + 100*counterAlb;
                             if (money > 0)
                             {
-                                std::cout << "\nGiocatore " << players[i]->getID() << " possiede " << counterCase << " case e " << counterAlb << " alberghi, quindi deve pagare " << counterCase << "x25 + " << counterAlb << "x100 = " << money << " " << Variabili::getValuta() << ".\n";
-                                output += "\nGiocatore " + std::to_string(players[i]->getID()) + " possiede " + std::to_string(counterCase) + " case e " + std::to_string(counterAlb) + " alberghi, quindi deve pagare " + std::to_string(counterCase) + "x25 + "  + std::to_string(counterAlb) + "x100 = "  + std::to_string(money) + " " + Variabili::getValuta() + ".\n";
+                                if (counterCase > 0)
+                                {
+                                    std::cout << "\nGiocatore " << players[i]->getID() << " ha " << counterCase << " case.\n";
+                                    output += "\nGiocatore " + std::to_string(players[i]->getID()) + " possiede " + std::to_string(counterCase) + " case.\n";
+                                    std::this_thread::sleep_for(std::chrono::seconds(pausa));
+                                }
+                                if (counterAlb > 0) 
+                                {
+                                    std::cout << "\nGiocatore " << players[i]->getID() << " ha " << counterAlb << " alberghi.\n";
+                                    output += "\nGiocatore " + std::to_string(players[i]->getID()) + " possiede " + std::to_string(counterAlb) + " alberghi.\n";
+                                    std::this_thread::sleep_for(std::chrono::seconds(pausa));
+                                }
+                            
+                                std::cout << "\nGiocatore " << players[i]->getID() << " deve pagare " << counterCase << " x 25 + " << counterAlb << " x 100 = " << money << " " << Variabili::getValuta() << ".\n";
+                                output += "\nGiocatore " + std::to_string(players[i]->getID()) + " deve pagare " + std::to_string(counterCase) + " x 25 + "  + std::to_string(counterAlb) + " x 100 = "  + std::to_string(money) + " " + Variabili::getValuta() + ".\n";
                                 pay = true;
                             }
                             else
@@ -687,8 +725,20 @@ int main(int argc, char *argv[])
                             money = 40*counterCase + 115*counterAlb;
                             if (money > 0)
                             {
-                                std::cout << "\nGiocatore " << players[i]->getID() << " possiede " << counterCase << " case e " << counterAlb << " alberghi, quindi deve pagare " << counterCase << "x40 + " << counterAlb << "x115 = " << money << " " << Variabili::getValuta() << ".\n";
-                                output += "\nGiocatore " + std::to_string(players[i]->getID()) + " possiede " + std::to_string(counterCase) + " case e " + std::to_string(counterAlb) + " alberghi, quindi deve pagare " + std::to_string(counterCase) + "x40 + "  + std::to_string(counterAlb) + "x115 = "  + std::to_string(money) + " " + Variabili::getValuta() + ".\n";
+                                if (counterCase > 0)
+                                {
+                                    std::cout << "\nGiocatore " << players[i]->getID() << " ha " << counterCase << " case.\n";
+                                    output += "\nGiocatore " + std::to_string(players[i]->getID()) + " possiede " + std::to_string(counterCase) + " case.\n";
+                                    std::this_thread::sleep_for(std::chrono::seconds(pausa));
+                                }
+                                if (counterAlb > 0) 
+                                {
+                                    std::cout << "\nGiocatore " << players[i]->getID() << " ha " << counterAlb << " alberghi.\n";
+                                    output += "\nGiocatore " + std::to_string(players[i]->getID()) + " possiede " + std::to_string(counterAlb) + " alberghi.\n";
+                                    std::this_thread::sleep_for(std::chrono::seconds(pausa));
+                                }
+                                std::cout << "\nGiocatore " << players[i]->getID() << " deve pagare " << counterCase << " x 40 + " << counterAlb << " x 115 = " << money << " " << Variabili::getValuta() << ".\n";
+                                output += "\nGiocatore " + std::to_string(players[i]->getID()) + " deve pagare " + std::to_string(counterCase) + " x 40 + "  + std::to_string(counterAlb) + " x 115 = "  + std::to_string(money) + " " + Variabili::getValuta() + ".\n";
                                 pay = true;
                             }
                             else
@@ -920,7 +970,7 @@ int main(int argc, char *argv[])
                     std::this_thread::sleep_for(std::chrono::seconds(pausa));
 
                     // Stampo la rendita, ovvero quanto il giocatore deve spendere
-                    if (!pos1->canBuy())
+                    if (!pos1->canBuy() && !pos1->isCasa1())
                     {
                         std::cout << "La rendita solo terreno e' di " << pos1->getAffitto() << " " + Variabili::getValuta() + ".\n";
                         output += "La rendita solo terreno e' di " + std::to_string(pos1->getAffitto()) + " " + Variabili::getValuta() + ".\n";
@@ -1239,7 +1289,7 @@ int main(int argc, char *argv[])
                 if (pos2)
                     prezzo = pos2->getPrezzo()/2;
                 if (pos1)
-                    prezzo = pos1->getPrezzo()/2;
+                    prezzo = pos1->getPrezzoTerreno()/2;
                 if (pos4)
                     prezzo = pos4->getPrezzo()/2;
 
@@ -1321,21 +1371,21 @@ int main(int argc, char *argv[])
                         try
                         {
                             playersAsta[0]->buy(prezzo, players[i]->getPosition());
-                            aggiornaSchermo(T, players,hey);
                             std::cout << "Giocatore " << playersAsta[0]->getID() << " ha pagato " << prezzo << " " << Variabili::getValuta() << " e ha acquistato " << players[i]->getPosition()->getName() << ".\n";
-                            if (playersAsta[0]->_elenco_proprieta_st.size() > 1 && pos2)
+                            hey += "Giocatore " + std::to_string(playersAsta[0]->getID()) + " ha pagato " + std::to_string(prezzo) + " " + Variabili::getValuta() + " e ha acquistato " + players[i]->getPosition()->getName() + ".\n";
+                            if (playersAsta[0]->_elenco_proprieta_st.size() > 1 && pos2) // Se ho acquistato una casella stazione
                             {
                                 std::this_thread::sleep_for(std::chrono::seconds(pausa));
                                 int size = playersAsta[0]->_elenco_proprieta_st.size();
                                 std::string s = std::to_string(size);
                                 if (size == 4)
                                     s = "tutte e 4 le";
-                                std::cout << "Giocatore " << playersAsta[0]->getID() << " ora possiede " << s << " stazioni.\n";
+                                hey += "Giocatore " + std::to_string(playersAsta[0]->getID()) + " ora possiede " + s + " stazioni.\n";
                             }
-                            if (playersAsta[0]->_elenco_proprieta_soc.size() == 2 && pos4)
+                            if (playersAsta[0]->_elenco_proprieta_soc.size() == 2 && pos4) // Se ho acquistato una casella società
                             {
                                 std::this_thread::sleep_for(std::chrono::seconds(pausa));
-                                std::cout << "Giocatore " << playersAsta[0]->getID() << " ora possiede tutte e 2 le societa'.\n";
+                                hey += "Giocatore " + std::to_string(playersAsta[0]->getID()) + " ora possiede tutte e 2 le societa'.\n";
                             }
                             if (pos1)   // Se ho acquistato una casella terreno
                             { // Se è l'ultima di una famiglia di caselle simili
@@ -1361,15 +1411,13 @@ int main(int argc, char *argv[])
                                             playersAsta[0]->pushInToBuild(playersAsta[0]->_elenco_proprieta[h]);
                                         }
                                     }
-                                    aggiornaSchermo(T, players,hey);
                                 }
                             }
+                            aggiornaSchermo(T, players,hey);
                         }
                         catch (const Giocatore::Not_Enough_Money& e)    // non dovrebbe mai lanciarla, ma meglio gestirla ...
                         {
                             std::cout << "Tentativo di acquisto non riuscito, " << Variabili::getValuta() << " non sufficenti.\n";
-                            std::this_thread::sleep_for(std::chrono::seconds(pausa));
-                            std::cout << "Non succede nulla.\n";
                         }
                     }
                     else
@@ -1377,7 +1425,7 @@ int main(int argc, char *argv[])
                 }
                 else
                     std::cout << "\nNessun giocatore ha abbastanza " << Variabili::getValuta() << " per partecipare all'asta.\n";
-                
+                    
                 std::this_thread::sleep_for(std::chrono::seconds(pausa));
                 std::cout << "Fine asta.\n" << muro;
                 std::this_thread::sleep_for(std::chrono::seconds(pausa));

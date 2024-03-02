@@ -43,9 +43,7 @@ public:
     bool hasFreeExitPrisonProb() {return FreeExitPrisonProb;}
     bool hasFreeExitPrisonImpr() {return FreeExitPrisonImpr;}
     std::string getToBuild();
-    void pushInToBuild(Casella_Terreno* A) 
-    { if (A) _elenco_proprieta_to_build.push_back(A);
-      else   std::cout << "Puntatore non valido.\n";  }
+    void pushInToBuild(Casella_Terreno* A);
 
     // Funzioni SET
     void setJail(bool t)  { _isInJail = t;  if(!t) _turniJail=1; }
@@ -91,6 +89,5 @@ std::ostream &operator<<(std::ostream &, Giocatore);
 
 // Predicati per la funzione di ordinamento
 bool confrontaElementi(const Casella_Terreno*, const Casella_Terreno*);
-bool confrontaElementiCanBuy(const Casella_Terreno*, const Casella_Terreno*);
 
 #endif // GIOCATORE_H
