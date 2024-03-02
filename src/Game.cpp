@@ -135,10 +135,10 @@ int main(int argc, char *argv[])
             bool affittoRaddoppiato = false;
             bool wantToBuy;
 
-    // Aggiorno schermo
+// Aggiorno schermo
             aggiornaSchermo(T,players,output);
             
-    // Inizio turno di un giocatore
+// Inizio turno di un giocatore
             std::cout << "\n" << muro;
             output += "\n"+ muro;
             
@@ -151,28 +151,80 @@ int main(int argc, char *argv[])
             output += "\nInizio " + turno + " del giocatore " + std::to_string(players[i]->getID()) + ".\n";
             std::this_thread::sleep_for(std::chrono::seconds(pausa));
 
-    // Il giocatore decide se comprare case/alberghi in proprietà dove può farlo
-            for (int l=0; l < players[i]->_elenco_proprieta_to_build.size(); l++)
+// Il giocatore decide se comprare case/alberghi in proprietà dove può farlo
+        if (!players[i]->_elenco_proprieta_to_build.empty())
+        {
+            bool playerCanBuild = true; // scelta se il giocatore vuole comprare case/alberghi
+            if (players[i]->getMoney() < players[i]->_elenco_proprieta_to_build[0]->getPrezzo())
+            {   // Se il giocatore non ha abbastanza soldi per comprare una casa/albergo
+                playerCanBuild = false;
+            }
+            bool terreniEdificabili = false;
+            // Controllo se posso costruire (se ci sono tutti alberghi non posso costruire nulla)
+            for (int d = 0; d < players[i]->_elenco_proprieta_to_build.size(); d++)
             {
-                if (!players[i]->_elenco_proprieta_to_build[l]->isAlbergo())    // Se non c'è ancora l'albergo si può costruire
+                if (!players[i]->_elenco_proprieta_to_build[d]->isAlbergo())    // Se almeno in uno degli elementi del vettore non c'è ancora un albergo
+                    terreniEdificabili = true;
+            }
+            if (!terreniEdificabili)
+                playerCanBuild = false;
+            // Se playerCanBuild è true significa che il giocatore ha abbastanza soldi e ci sono terreni su cui può costruire
+            if (playerCanBuild) 
+            {
+                if (dynamic_cast<Human*>(players[i]))
                 {
-                    if (players[i]->wantToBuild(&output, players[i]->_elenco_proprieta_to_build[l]))  // Il giocatore sceglie se comprare una casa/albergo (se non ha abbastanza soldi per l'acquisto restituisce false)
+                    std::cout << "Giocatore " + std::to_string(players[i]->getID()) + ", vuoi acquistare qualche casa/albergo? (Inserire S per si, N per no)\n";
+                    bool a = true; // a per uscire dal ciclo
+                    char risposta;
+                    do
                     {
-                        players[i]->pay(players[i]->_elenco_proprieta_to_build[l]->getPrezzo());
-                        players[i]->_elenco_proprieta_to_build[l]->build();
-                        if (players[i]->_elenco_proprieta_to_build[l]->isAlbergo()) // se dopo l'acquisto c'è un albergo
+                        std::cin >> risposta;
+                        if (risposta == 'S' || risposta == 's')
                         {
-                            output += "Giocatore " + std::to_string(players[i]->getID()) + " ha pagato " + std::to_string(players[i]->_elenco_proprieta_to_build[l]->getPrezzo()) + " " + Variabili::getValuta() + " e ha acquistato un albergo in " + players[i]->_elenco_proprieta_to_build[l]->getName() + ".\n";
+                            a = false;
                         }
-                        else if (players[i]->_elenco_proprieta_to_build[l]->isCasa1())    // c'è una casa dopo l'acquisto, quindi dovro stampare ...
+                        else if (risposta == 'N' || risposta == 'n')
                         {
-                            output += "Giocatore " + std::to_string(players[i]->getID()) + " ha pagato " + std::to_string(players[i]->_elenco_proprieta_to_build[l]->getPrezzo()) + " " + Variabili::getValuta() + " e ha acquistato una casa in " + players[i]->_elenco_proprieta_to_build[l]->getName() + ".\n";
+                            a = false;
+                            playerCanBuild = false;
+                        } else
+                            std::cout << "Comando non riconosciuto (Inserire S per si, N per no)\n";
+                    } while (a);
+                }
+                if (playerCanBuild)
+                {
+                    for (int l=0; l < players[i]->_elenco_proprieta_to_build.size(); l++)
+                    {
+                        if (!players[i]->_elenco_proprieta_to_build[l]->isAlbergo())    // Se non c'è ancora l'albergo si può costruire
+                        {
+                            if (l != players[i]->_elenco_proprieta_to_build.size()-1)
+                            {
+                                // Un giocatore non può costruire case/alberghi su una casella se in quella dopo non è alla pari
+                                if (players[i]->_elenco_proprieta_to_build[l]->getStatus() > players[i]->_elenco_proprieta_to_build[l+1]->getStatus() && players[i]->_elenco_proprieta_to_build[l]->getFamily() == players[i]->_elenco_proprieta_to_build[l+1]->getFamily())
+                                {
+                                    continue;
+                                }
+                            }
+                            if (players[i]->wantToBuild(players[i]->_elenco_proprieta_to_build[l]))  // Il giocatore sceglie se comprare una casa/albergo (se non ha abbastanza soldi per l'acquisto restituisce false)
+                            {
+                                players[i]->pay(players[i]->_elenco_proprieta_to_build[l]->getPrezzo());
+                                players[i]->_elenco_proprieta_to_build[l]->build();
+                                if (players[i]->_elenco_proprieta_to_build[l]->isAlbergo()) // se dopo l'acquisto c'è un albergo
+                                {
+                                    output += "Giocatore " + std::to_string(players[i]->getID()) + " ha pagato " + std::to_string(players[i]->_elenco_proprieta_to_build[l]->getPrezzo()) + " " + Variabili::getValuta() + " e ha acquistato un albergo in " + players[i]->_elenco_proprieta_to_build[l]->getName() + ".\n";
+                                }
+                                else if (players[i]->_elenco_proprieta_to_build[l]->isCasa1())    // c'è una casa dopo l'acquisto, quindi dovro stampare ...
+                                {
+                                    output += "Giocatore " + std::to_string(players[i]->getID()) + " ha pagato " + std::to_string(players[i]->_elenco_proprieta_to_build[l]->getPrezzo()) + " " + Variabili::getValuta() + " e ha acquistato una casa in " + players[i]->_elenco_proprieta_to_build[l]->getName() + ".\n";
+                                }
+                                aggiornaSchermo(T,players,output);
+                                std::this_thread::sleep_for(std::chrono::seconds(pausa));
+                            }
                         }
-                        aggiornaSchermo(T,players,output);
-                        std::this_thread::sleep_for(std::chrono::seconds(pausa));
                     }
                 }
             }
+        }
 
     // Se il giocatore è in prigione
             if(players[i]->isInJail())
@@ -198,57 +250,70 @@ int main(int argc, char *argv[])
 
                 if (players[i]->isInJail())
                 {
-                    // Se il giocatore è in prigione e ci ha passato già nMaxTurniPrigione turni
-                    if (players[i]->getTurniJail() == Variabili::nMaxTurniPrigione)
+                    std::cout << "Giocatore " << players[i]->getID() << " e' in prigione (turno n" << players[i]->getTurniJail() << ").\n";
+                    output += "Giocatore " + std::to_string(players[i]->getID()) + " e' in prigione (turno n" + std::to_string(players[i]->getTurniJail()) + ").\n";
+                    std::this_thread::sleep_for(std::chrono::seconds(pausa));
+                    
+                    if (players[i]->choice(&output)) // Il giocatore sceglie se uscire pagando tot euro
                     {
+                        players[i]->pay(Variabili::moneyUscitaPrigione);
                         players[i]->setJail(false);
-                        std::cout << "Giocatore " << players[i]->getID() << " ha passato " << Variabili::nMaxTurniPrigione << " turni in prigione, quindi esce pagando " + std::to_string(Variabili::moneyUscitaPrigione) + " " + Variabili::getValuta() + " e tira i dadi per muoversi.\n";
-                        output += "Giocatore " + std::to_string(players[i]->getID()) + " ha passato " + std::to_string(Variabili::nMaxTurniPrigione) + " turni in prigione, quindi esce pagando " + std::to_string(Variabili::moneyUscitaPrigione) + " " + Variabili::getValuta() + " e tira i dadi per muoversi.\n";
+                        std::cout << "Giocatore " << players[i]->getID() << " ha pagato " << Variabili::moneyUscitaPrigione << " " << Variabili::getValuta() << " per uscire di prigione.\n";
+                        output += "Giocatore " + std::to_string(players[i]->getID()) + " ha pagato " + std::to_string(Variabili::moneyUscitaPrigione) + " " + Variabili::getValuta() + " per uscire di prigione.\n";
                         std::this_thread::sleep_for(std::chrono::seconds(pausa));
-                        try
-                        {
-                            players[i]->Transaction(50, nullptr, &output);
-                        }
-                        catch (const Giocatore::Player_Lost& e)
-                        {
-                            std::this_thread::sleep_for(std::chrono::seconds(pausa));
-                            output += "Giocatore " + std::to_string(players[i]->getID()) + " e' andato in bancarotta e ha perso.\n";
-                            T.prison->removePlayer(players[i]->getID());
-                        }
-                        aggiornaSchermo(T,players,output);
                     }
-                    else
-                    {
-                        std::cout << "Giocatore " << players[i]->getID() << " e' in prigione (turno n" << players[i]->getTurniJail() << ").\n";
-                        output += "Giocatore " + std::to_string(players[i]->getID()) + " e' in prigione (turno n" + std::to_string(players[i]->getTurniJail()) + ").\n";
+                    else   // se il giocatore non è uscito pagando
+                    {                             // allora tira i dadi
                         std::this_thread::sleep_for(std::chrono::seconds(pausa));
-                        
-                        if (players[i]->choice(&output)) // Il giocatore sceglie se uscire pagando tot euro
+                        tiro = getDiceRoll();
+                        toDoRoll = false;
+                        std::cout << "Giocatore " << players[i]->getID() << " ha tirato i dadi e ha fatto " << tiro.first << " + " << tiro.second << " = " << (tiro.first + tiro.second) << ".\n";
+                        output += "Giocatore " + std::to_string(players[i]->getID()) + " ha tirato i dadi e ha fatto "+ std::to_string(tiro.first) + " + " + std::to_string(tiro.second) + " = " + std::to_string(tiro.first + tiro.second) + ".\n";
+                        std::this_thread::sleep_for(std::chrono::seconds(pausa));
+
+                        if (tiro.first == tiro.second)
                         {
-                            players[i]->pay(Variabili::moneyUscitaPrigione);
                             players[i]->setJail(false);
-                            std::cout << "Giocatore " << players[i]->getID() << " ha pagato " << Variabili::moneyUscitaPrigione << " " << Variabili::getValuta() << " per uscire di prigione.\n";
-                            output += "Giocatore " + std::to_string(players[i]->getID()) + " ha pagato " + std::to_string(Variabili::moneyUscitaPrigione) + " " + Variabili::getValuta() + " per uscire di prigione.\n";
+                            std::cout << "Giocatore " << players[i]->getID() << " ha fatto 2 numeri uguali, quindi esce di prigione.\n";
+                            output += "Giocatore " + std::to_string(players[i]->getID()) + " ha fatto 2 numeri uguali, quindi esce di prigione.\n";
                             std::this_thread::sleep_for(std::chrono::seconds(pausa));
                         }
-                        else   // se il giocatore non è uscito pagando
-                        {                             // allora tira i dadi
-                            std::this_thread::sleep_for(std::chrono::seconds(pausa));
-                            tiro = getDiceRoll();
-                            toDoRoll = false;
-                            std::cout << "Giocatore " << players[i]->getID() << " ha tirato i dadi e ha fatto " << tiro.first << " + " << tiro.second << " = " << (tiro.first + tiro.second) << ".\n";
-                            output += "Giocatore " + std::to_string(players[i]->getID()) + " ha tirato i dadi e ha fatto "+ std::to_string(tiro.first) + " + " + std::to_string(tiro.second) + " = " + std::to_string(tiro.first + tiro.second) + ".\n";
-                            std::this_thread::sleep_for(std::chrono::seconds(pausa));
-
-                            if (tiro.first == tiro.second)
+                        else
+                        {
+                            // Se il giocatore è in prigione e ci ha passato già nMaxTurniPrigione turni
+                            if (players[i]->getTurniJail() == Variabili::nMaxTurniPrigione)
                             {
                                 players[i]->setJail(false);
-                                std::cout << "Giocatore " << players[i]->getID() << " ha fatto 2 numeri uguali, quindi esce di prigione.\n";
-                                output += "Giocatore " + std::to_string(players[i]->getID()) + " ha fatto 2 numeri uguali, quindi esce di prigione.\n";
+                                std::cout << "Giocatore " << players[i]->getID() << " ha passato " << Variabili::nMaxTurniPrigione << " turni in prigione, quindi esce pagando " << Variabili::moneyUscitaPrigione << " " + Variabili::getValuta() + ".\n";
+                                output += "Giocatore " + std::to_string(players[i]->getID()) + " ha passato " + std::to_string(Variabili::nMaxTurniPrigione) + " turni in prigione, quindi esce pagando " + std::to_string(Variabili::moneyUscitaPrigione) + " " + Variabili::getValuta() + ".\n";
                                 std::this_thread::sleep_for(std::chrono::seconds(pausa));
+                                bool goodTransaction;
+                                try
+                                {
+                                    players[i]->Transaction(50, nullptr, &output);
+                                    goodTransaction = true;
+                                }
+                                catch (const Giocatore::Player_Lost& e)
+                                {
+                                    std::this_thread::sleep_for(std::chrono::seconds(pausa));
+                                    output += "Giocatore " + std::to_string(players[i]->getID()) + " e' andato in bancarotta e ha perso.\n";
+                                    T.prison->removePlayer(players[i]->getID());
+                                    goodTransaction = false;
+                                }
+                                aggiornaSchermo(T,players,output);
+                                if (goodTransaction == false)
+                                {
+                                    std::this_thread::sleep_for(std::chrono::seconds(pausa));
+                                    std::cout << "Fine " << turno << " del giocatore " << players[i]->getID() << ".\n";
+                                    std::cout << muro;
+                                    std::this_thread::sleep_for(std::chrono::seconds(pausa));
+                                    continue;
+                                }
+
                             }
                             else
                             {
+                        
                                 if (players[i]->getNTurno() > 1)   // Se è in un turno extra (secondo o terzo) e ha fatto un numero di dadi diverso
                                     players[i]->resetNTurno();  // Il turno del giocatore torna ad 1 e si passa al giocatore successivo
                                 std::cout << "Giocatore " << players[i]->getID() << " ha fatto 2 numeri diversi, quindi resta in prigione.\n";
@@ -334,212 +399,13 @@ int main(int argc, char *argv[])
                 bool pay = false;
                 bool deposit = false;
                 int money = 0;
-                int counterAlb = 0, counterCase = 0, pagato = 0, guadagno = 0;
-    // Probabilità
-                if (pos5->getNameOutput() == "?P?")
-                {
-                    std::uniform_int_distribution<int> distr(1,nScelteP);
-                    int n = distr(gen);
-                    // per simulare la pescata di una carta dal mazzetto, poi la carta si rimette in mezzo e si mescola.
-                    switch (n)
-                    {
-                        case 1:
-                            std::cout << "Ricevete la parcella del dottore: pagate 50 " + Variabili::getValuta() + ".\n";
-                            output += "Ricevete la parcella del dottore: pagate 50 " + Variabili::getValuta() + ".\n";
-                            pay = true;
-                            money = 50;
-                        break;
-                        
-                        case 2:
-                            std::cout << "Pagate le rette scolastiche dei vostri figli: versate 50 " + Variabili::getValuta() + ".\n";
-                            output += "Pagate le rette scolastiche dei vostri figli: versate 50 " + Variabili::getValuta() + ".\n";
-                            pay = true;
-                            money = 50;
-                        break;
-                        
-                        case 3:
-                            std::cout << "Pagate la retta ospedaliera di 100 " + Variabili::getValuta() + ".\n";
-                            output += "Pagate la retta ospedaliera di 100 " + Variabili::getValuta() + ".\n";
-                            pay = true;
-                            money = 100;
-                        break;
-                        
-                        case 4:
-                            for (int bob=0; bob < players[i]->_elenco_proprieta.size(); bob++)
-                            {
-                                if (players[i]->_elenco_proprieta[bob]->isAlbergo())
-                                    counterAlb++;
-                                if (players[i]->_elenco_proprieta[bob]->isCasa4())
-                                    counterCase++;
-                                if (players[i]->_elenco_proprieta[bob]->isCasa3())
-                                    counterCase++;
-                                if (players[i]->_elenco_proprieta[bob]->isCasa2())
-                                    counterCase++;
-                                if (players[i]->_elenco_proprieta[bob]->isCasa1())
-                                    counterCase++;
-                            }
-                            std::cout << "Pagate per i contributi di miglioria stradale: 40 "<< Variabili::getValuta() << " per ogni casa, 115 "<< Variabili::getValuta() << " per ogni albergo.";
-                            output += "Pagate per i contributi di miglioria stradale: 40 " + Variabili::getValuta() + " per ogni casa, 115 " + Variabili::getValuta() + " per ogni albergo.";
-                            std::this_thread::sleep_for(std::chrono::seconds(pausa));
-                            money = 40*counterCase + 115*counterAlb;
-                            if (money > 0)
-                            {
-                                std::cout << " Giocatore " << players[i]->getID() << " possiede " << counterCase << " case e " << counterAlb << " alberghi, quindi deve pagare " << counterCase << "x40 + " << counterAlb << "x115 = " << money << " " << Variabili::getValuta() << ".\n";
-                                output += " Giocatore " + std::to_string(players[i]->getID()) + " possiede " + std::to_string(counterCase) + " case e " + std::to_string(counterAlb) + " alberghi, quindi deve pagare " + std::to_string(counterCase) + "x40 + "  + std::to_string(counterAlb) + "x115 = "  + std::to_string(money) + " " + Variabili::getValuta() + ".\n";
-                                pay = true;
-                            }
-                            else
-                            {
-                                std::this_thread::sleep_for(std::chrono::seconds(pausa));
-                                std::cout << "\nGiocatore " << players[i]->getID() << " non ha ancora costruito case, quindi non paga nulla.\n";
-                            }
-                        break;
-                        
-                        case 5:
-                            std::cout << "La banca riconosce un errore nel vostro estratto conto: incassate 200 " + Variabili::getValuta() + ".\n";
-                            output += "La banca riconosce un errore nel vostro estratto conto: incassate 200 " + Variabili::getValuta() + ".\n";
-                            deposit = true;
-                            money = 200;
-                        break;
-                        
-                        case 6:
-                            std::cout << "Vi viene rimborsata la tassa sui redditi: incassate 50 " + Variabili::getValuta() + ".\n";
-                            output += "Vi viene rimborsata la tassa sui redditi: incassate 50 " + Variabili::getValuta() + ".\n";
-                            deposit = true;
-                            money = 50;
-                        break;
-                        
-                        case 7:
-                            std::cout << "Dalla vendita di uno stock di merci ricavate 50 " + Variabili::getValuta() + ".\n";
-                            output += "Dalla vendita di uno stock di merci ricavate 50 " + Variabili::getValuta() + ".\n";
-                            deposit = true;
-                            money = 50;
-                        break;
-                        
-                        case 8:
-                            std::cout << "Avete vinto il secondo premio in un concorso di bellezza: incassate 100 " + Variabili::getValuta() + ".\n";
-                            output += "Avete vinto il secondo premio in un concorso di bellezza: incassate 100 " + Variabili::getValuta() + ".\n";
-                            deposit = true;
-                            money = 100;
-                        break;
-                        
-                        case 9:
-                            std::cout << "Maturano le cedole delle vostre azioni: ricevete 100 " + Variabili::getValuta() + ".\n";
-                            output += "Maturano le cedole delle vostre azioni: ricevete 100 " + Variabili::getValuta() + ".\n";
-                            deposit = true;
-                            money = 100;
-                        break;
-                        
-                        case 10:
-                            std::cout << "Ereditate 100 " + Variabili::getValuta() + " da un lontano zio.\n";
-                            output +=  "Ereditate 100 " + Variabili::getValuta() + " da un lontano zio.\n";
-                            deposit = true;
-                            money = 100;
-                        break;
-                        
-                        case 11:
-                            std::cout << "Maturano gli interessi della vostra assicurazione sulla vita: incassate 100 " + Variabili::getValuta() + ".\n";
-                            output += "Maturano gli interessi della vostra assicurazione sulla vita: incassate 100 " + Variabili::getValuta() + ".\n";
-                            deposit = true;
-                            money = 100;
-                        break;
-                        
-                        case 12:
-                            std::cout << "Ricevete 25 " + Variabili::getValuta() + " per la vostra consulenza.\n";
-                            output += "Ricevete 25 " + Variabili::getValuta() + " per la vostra consulenza.\n";
-                            deposit = true;
-                            money = 25;
-                        break;
-                        
-                        case 13:
-                            std::cout << "E' il vostro compleanno: ogni giocatore vi regala 50 " + Variabili::getValuta() + ".\n";
-                            output += "E' il vostro compleanno: ogni giocatore vi regala 50 " + Variabili::getValuta() + ".\n";
-                            std::this_thread::sleep_for(std::chrono::seconds(pausa));
-                            for (int bob = 0; bob < players.size(); bob++)
-                            {
-                                if (players[bob]->getID() != players[i]->getID())
-                                {
-                                    tmpMoney = players[bob]->getMoney();
-                                    try
-                                    {
-                                        players[bob]->Transaction(50, players[i], &output);
-                                    }
-                                    catch (const Giocatore::Player_Lost& e)
-                                    {
-                                        std::this_thread::sleep_for(std::chrono::seconds(pausa));
-                                        output += "Giocatore " + std::to_string(players[bob]->getID()) + " e' andato in bancarotta e ha perso.\n";
-                                        players[bob]->getPosition()->removePlayer(players[bob]->getID());
-                                    }
-                                    guadagno += tmpMoney - players[bob]->getMoney();
-                                }
-                            }
-                            aggiornaSchermo(T,players,output);
-                            std::cout << "Giocatore " << players[i]->getID() << " ha incassato " << guadagno << " " + Variabili::getValuta() + ".\n";
-                        break;
-                        
-                        case 14:
-                            std::cout << "Andate in prigione direttamente e senza passare dal via.\n";
-                            output += "Andate in prigione direttamente e senza passare dal via.\n";
-                            players[i]->setJail(true);
-                            std::this_thread::sleep_for(std::chrono::seconds(pausa));
-                            // Movimento nella casella Transito/Prigione
-                            players[i]->getPosition()->removePlayer(players[i]->getID()); // Rimozione dal tabellone del giocatore dalla casella vecchia
-                            players[i]->goTo(T.prison);
-                            T.prison->addPlayer(players[i]->getID()); // Aggiunta al tabellone del giocatore (nella casella dove si è spostato)
-                            aggiornaSchermo(T,players,output);
-                        break;
-                        
-                        case 15:
-                            std::cout << "Andate avanti fino al via e ritirate " << Variabili::moneyPassaggioVia << " " << Variabili::getValuta() + ".\n";
-                            output += "Andate avanti fino al via e ritirate " + std::to_string(Variabili::moneyPassaggioVia) + " " + Variabili::getValuta() + ".\n";
-                            std::this_thread::sleep_for(std::chrono::seconds(pausa));
-                            // Movimento nella casella Via
-                            players[i]->getPosition()->removePlayer(players[i]->getID()); // Rimozione dal tabellone del giocatore dalla casella vecchia
-                            players[i]->goTo(T.partenza);
-                            T.partenza->addPlayer(players[i]->getID()); // Aggiunta al tabellone del giocatore (nella casella dove si è spostato)
-                            aggiornaSchermo(T,players,output);
-                            std::cout << "Giocatore " << players[i]->getID() << " si e' mosso sul via e ha ritirato " <<  Variabili::moneyPassaggioVia << " " << Variabili::getValuta() << ".\n";
-                            output += "Giocatore " + std::to_string(players[i]->getID()) + " si e' mosso sul via e ha ritirato " + std::to_string(Variabili::moneyPassaggioVia) + " " + Variabili::getValuta() + ".\n";
-                            std::this_thread::sleep_for(std::chrono::seconds(pausa));
-                        break;
-                        
-                        case 16:
-                            std::cout << "Giocatore " << players[i]->getID() << " ha ottenuto la carta Uscita gratis di prigione.\n";
-                            players[i]->setFreeExitPrisonProb(true);
-                            nScelteP = 15;
-                        break;
-                    }
-                    if (pay)
-                    {
-                        try
-                        {
-                            players[i]->Transaction(money, nullptr, &output);
-                            std::this_thread::sleep_for(std::chrono::seconds(pausa));
-                            aggiornaSchermo(T,players,output);
-                            std::cout << "Giocatore " << players[i]->getID() << " ha pagato " << money << " " + Variabili::getValuta() + ".\n";
-                        }
-                        catch (const Giocatore::Player_Lost& e)
-                        {
-                            std::this_thread::sleep_for(std::chrono::seconds(pausa));
-                            output += "Giocatore " + std::to_string(players[i]->getID()) + " e' andato in bancarotta e ha perso.\n";
-                            players[i]->getPosition()->removePlayer(players[i]->getID());
-                            aggiornaSchermo(T,players,output);
-                        }
-                    }
-                    if (deposit)
-                    {
-                        players[i]->deposit(money);
-                        std::this_thread::sleep_for(std::chrono::seconds(pausa));
-                        aggiornaSchermo(T,players,output);
-                        std::cout << "Giocatore " << players[i]->getID() << " ha incassato " << money << " " + Variabili::getValuta() + ".\n";
-                    }
-                }
+                int counterAlb = 0, counterCase = 0, pagato = 0, guadagno = 0;                
     // Imprevisti
-                else
+                if (pos5->getNameOutput() == "?I?")
                 {
                     std::uniform_int_distribution<int> distr(1,nScelteI);
-                    int n = distr(gen);
                     tmpMoney = players[i]->getMoney();  // Per intercettare il passaggio dal via e stamparlo
+                    int n = distr(gen);
                     // per simulare la pescata di una carta dal mazzetto, poi la carta si rimette in mezzo e si mescola.
                     switch (n)
                     {
@@ -552,12 +418,13 @@ int main(int argc, char *argv[])
                             aggiornaSchermo(T,players,output);
                             std::cout << "Giocatore " << players[i]->getID() << " si e' mosso su " << players[i]->getPosition()->getName() << ".\n";
                             output += "Giocatore " + std::to_string(players[i]->getID()) + " si e' mosso su " + players[i]->getPosition()->getName() + ".\n";
+                            if (players[i]->getPosition())
                             std::this_thread::sleep_for(std::chrono::seconds(pausa));
                         break;
                         
                         case 2:
-                            std::cout << "Andate fino a Parco Della Vittoria (se passate dal Via ritirate " << Variabili::moneyPassaggioVia << " " << Variabili::getValuta() << ").\n";
-                            output += "Andate fino a Parco Della Vittoria (se passate dal Via ritirate " + std::to_string(Variabili::moneyPassaggioVia) + " " + Variabili::getValuta() + ").\n";
+                            std::cout << "Andate fino a Parco Della Vittoria.\n";
+                            output += "Andate fino a Parco Della Vittoria.\n";
                             players[i]->getPosition()->removePlayer(players[i]->getID()); // Rimozione dal tabellone del giocatore dalla casella vecchia
                             players[i]->goTo("Parco Della Vittoria");
                             T.partenza->getPrec()->addPlayer(players[i]->getID());
@@ -607,8 +474,8 @@ int main(int argc, char *argv[])
                             money = 25*counterCase + 100*counterAlb;
                             if (money > 0)
                             {
-                                std::cout << " Giocatore " << players[i]->getID() << " possiede " << counterCase << " case e " << counterAlb << " alberghi, quindi deve pagare " << counterCase << "x25 + " << counterAlb << "x100 = " << money << " " << Variabili::getValuta() << ".\n";
-                                output += " Giocatore " + std::to_string(players[i]->getID()) + " possiede " + std::to_string(counterCase) + " case e " + std::to_string(counterAlb) + " alberghi, quindi deve pagare " + std::to_string(counterCase) + "x25 + "  + std::to_string(counterAlb) + "x100 = "  + std::to_string(money) + " " + Variabili::getValuta() + ".\n";
+                                std::cout << "\nGiocatore " << players[i]->getID() << " possiede " << counterCase << " case e " << counterAlb << " alberghi, quindi deve pagare " << counterCase << "x25 + " << counterAlb << "x100 = " << money << " " << Variabili::getValuta() << ".\n";
+                                output += "\nGiocatore " + std::to_string(players[i]->getID()) + " possiede " + std::to_string(counterCase) + " case e " + std::to_string(counterAlb) + " alberghi, quindi deve pagare " + std::to_string(counterCase) + "x25 + "  + std::to_string(counterAlb) + "x100 = "  + std::to_string(money) + " " + Variabili::getValuta() + ".\n";
                                 pay = true;
                             }
                             else
@@ -751,7 +618,7 @@ int main(int argc, char *argv[])
                             // Movimento nella casella Via
                             players[i]->deposit(Variabili::moneyPassaggioVia);
                             players[i]->getPosition()->removePlayer(players[i]->getID()); // Rimozione dal tabellone del giocatore dalla casella vecchia
-                            players[i]->goTo(T.partenza);
+                            players[i]->goTo("Via");
                             T.partenza->addPlayer(players[i]->getID()); // Aggiunta al tabellone del giocatore (nella casella dove si è spostato)
                             aggiornaSchermo(T,players,output);
                             std::cout << "Giocatore " << players[i]->getID() << " si e' mosso sul via e ha ritirato " <<  Variabili::moneyPassaggioVia << " " << Variabili::getValuta() << ".\n";
@@ -765,30 +632,211 @@ int main(int argc, char *argv[])
                             nScelteI=15;
                         break;
                     }
-                    if (pay)
+                }
+    // Probabilità
+                Casella_Prob_Impr* pos5bis = dynamic_cast<Casella_Prob_Impr*>(players[i]->getPosition());
+                bool tornatoIndietroSuProb = false;
+                if (pos5bis)
+                    if (pos5bis->getNameOutput() == "?P?")
+                        tornatoIndietroSuProb = true;
+                if (tornatoIndietroSuProb || pos5->getNameOutput() == "?P?")
+                {
+                    std::uniform_int_distribution<int> distr(1,nScelteP);
+                    int n = distr(gen);
+                    // per simulare la pescata di una carta dal mazzetto, poi la carta si rimette in mezzo e si mescola.
+                    switch (n)
                     {
-                        try
-                        {
-                            players[i]->Transaction(money, nullptr, &output);
+                        case 1:
+                            std::cout << "Pagate la parcella del dottore di 50 " + Variabili::getValuta() + ".\n";
+                            output += "Pagate la parcella del dottore di 50 " + Variabili::getValuta() + ".\n";
+                            pay = true;
+                            money = 50;
+                        break;
+                        
+                        case 2:
+                            std::cout << "Pagate le rette scolastiche dei vostri figli: versate 50 " + Variabili::getValuta() + ".\n";
+                            output += "Pagate le rette scolastiche dei vostri figli: versate 50 " + Variabili::getValuta() + ".\n";
+                            pay = true;
+                            money = 50;
+                        break;
+                        
+                        case 3:
+                            std::cout << "Pagate la retta ospedaliera di 100 " + Variabili::getValuta() + ".\n";
+                            output += "Pagate la retta ospedaliera di 100 " + Variabili::getValuta() + ".\n";
+                            pay = true;
+                            money = 100;
+                        break;
+                        
+                        case 4:
+                            for (int bob=0; bob < players[i]->_elenco_proprieta.size(); bob++)
+                            {
+                                if (players[i]->_elenco_proprieta[bob]->isAlbergo())
+                                    counterAlb++;
+                                if (players[i]->_elenco_proprieta[bob]->isCasa4())
+                                    counterCase++;
+                                if (players[i]->_elenco_proprieta[bob]->isCasa3())
+                                    counterCase++;
+                                if (players[i]->_elenco_proprieta[bob]->isCasa2())
+                                    counterCase++;
+                                if (players[i]->_elenco_proprieta[bob]->isCasa1())
+                                    counterCase++;
+                            }
+                            std::cout << "Pagate per i contributi di miglioria stradale: 40 "<< Variabili::getValuta() << " per ogni casa, 115 "<< Variabili::getValuta() << " per ogni albergo.";
+                            output += "Pagate per i contributi di miglioria stradale: 40 " + Variabili::getValuta() + " per ogni casa, 115 " + Variabili::getValuta() + " per ogni albergo.";
                             std::this_thread::sleep_for(std::chrono::seconds(pausa));
-                            aggiornaSchermo(T,players,output);
-                            std::cout << "Giocatore " << players[i]->getID() << " ha pagato " << money << " " + Variabili::getValuta() + ".\n";
-                        }
-                        catch (const Giocatore::Player_Lost& e)
-                        {
+                            money = 40*counterCase + 115*counterAlb;
+                            if (money > 0)
+                            {
+                                std::cout << "\nGiocatore " << players[i]->getID() << " possiede " << counterCase << " case e " << counterAlb << " alberghi, quindi deve pagare " << counterCase << "x40 + " << counterAlb << "x115 = " << money << " " << Variabili::getValuta() << ".\n";
+                                output += "\nGiocatore " + std::to_string(players[i]->getID()) + " possiede " + std::to_string(counterCase) + " case e " + std::to_string(counterAlb) + " alberghi, quindi deve pagare " + std::to_string(counterCase) + "x40 + "  + std::to_string(counterAlb) + "x115 = "  + std::to_string(money) + " " + Variabili::getValuta() + ".\n";
+                                pay = true;
+                            }
+                            else
+                            {
+                                std::this_thread::sleep_for(std::chrono::seconds(pausa));
+                                std::cout << "\nGiocatore " << players[i]->getID() << " non ha ancora costruito case, quindi non paga nulla.\n";
+                            }
+                        break;
+                        
+                        case 5:
+                            std::cout << "La banca riconosce un errore nel vostro estratto conto: incassate 200 " + Variabili::getValuta() + ".\n";
+                            output += "La banca riconosce un errore nel vostro estratto conto: incassate 200 " + Variabili::getValuta() + ".\n";
+                            deposit = true;
+                            money = 200;
+                        break;
+                        
+                        case 6:
+                            std::cout << "Vi viene rimborsata la tassa sui redditi: incassate 50 " + Variabili::getValuta() + ".\n";
+                            output += "Vi viene rimborsata la tassa sui redditi: incassate 50 " + Variabili::getValuta() + ".\n";
+                            deposit = true;
+                            money = 50;
+                        break;
+                        
+                        case 7:
+                            std::cout << "Dalla vendita di uno stock di merci ricavate 50 " + Variabili::getValuta() + ".\n";
+                            output += "Dalla vendita di uno stock di merci ricavate 50 " + Variabili::getValuta() + ".\n";
+                            deposit = true;
+                            money = 50;
+                        break;
+                        
+                        case 8:
+                            std::cout << "Avete vinto il secondo premio in un concorso di bellezza: incassate 100 " + Variabili::getValuta() + ".\n";
+                            output += "Avete vinto il secondo premio in un concorso di bellezza: incassate 100 " + Variabili::getValuta() + ".\n";
+                            deposit = true;
+                            money = 100;
+                        break;
+                        
+                        case 9:
+                            std::cout << "Maturano le cedole delle vostre azioni: ricevete 100 " + Variabili::getValuta() + ".\n";
+                            output += "Maturano le cedole delle vostre azioni: ricevete 100 " + Variabili::getValuta() + ".\n";
+                            deposit = true;
+                            money = 100;
+                        break;
+                        
+                        case 10:
+                            std::cout << "Ereditate 100 " + Variabili::getValuta() + " da un lontano zio.\n";
+                            output +=  "Ereditate 100 " + Variabili::getValuta() + " da un lontano zio.\n";
+                            deposit = true;
+                            money = 100;
+                        break;
+                        
+                        case 11:
+                            std::cout << "Maturano gli interessi della vostra assicurazione sulla vita: incassate 100 " + Variabili::getValuta() + ".\n";
+                            output += "Maturano gli interessi della vostra assicurazione sulla vita: incassate 100 " + Variabili::getValuta() + ".\n";
+                            deposit = true;
+                            money = 100;
+                        break;
+                        
+                        case 12:
+                            std::cout << "Ricevete 25 " + Variabili::getValuta() + " per la vostra consulenza.\n";
+                            output += "Ricevete 25 " + Variabili::getValuta() + " per la vostra consulenza.\n";
+                            deposit = true;
+                            money = 25;
+                        break;
+                        
+                        case 13:
+                            std::cout << "E' il vostro compleanno: ogni giocatore vi regala 50 " + Variabili::getValuta() + ".\n";
+                            output += "E' il vostro compleanno: ogni giocatore vi regala 50 " + Variabili::getValuta() + ".\n";
                             std::this_thread::sleep_for(std::chrono::seconds(pausa));
-                            output += "Giocatore " + std::to_string(players[i]->getID()) + " e' andato in bancarotta e ha perso.\n";
-                            players[i]->getPosition()->removePlayer(players[i]->getID());
+                            for (int bob = 0; bob < players.size(); bob++)
+                            {
+                                if (players[bob]->getID() != players[i]->getID())
+                                {
+                                    tmpMoney = players[bob]->getMoney();
+                                    try
+                                    {
+                                        players[bob]->Transaction(50, players[i], &output);
+                                    }
+                                    catch (const Giocatore::Player_Lost& e)
+                                    {
+                                        std::this_thread::sleep_for(std::chrono::seconds(pausa));
+                                        output += "Giocatore " + std::to_string(players[bob]->getID()) + " e' andato in bancarotta e ha perso.\n";
+                                        players[bob]->getPosition()->removePlayer(players[bob]->getID());
+                                    }
+                                    guadagno += tmpMoney - players[bob]->getMoney();
+                                }
+                            }
                             aggiornaSchermo(T,players,output);
-                        }
+                            std::cout << "Giocatore " << players[i]->getID() << " ha incassato " << guadagno << " " + Variabili::getValuta() + ".\n";
+                        break;
+                        
+                        case 14:
+                            std::cout << "Andate in prigione direttamente e senza passare dal via.\n";
+                            output += "Andate in prigione direttamente e senza passare dal via.\n";
+                            players[i]->setJail(true);
+                            std::this_thread::sleep_for(std::chrono::seconds(pausa));
+                            // Movimento nella casella Transito/Prigione
+                            players[i]->getPosition()->removePlayer(players[i]->getID()); // Rimozione dal tabellone del giocatore dalla casella vecchia
+                            players[i]->goTo(T.prison);
+                            T.prison->addPlayer(players[i]->getID()); // Aggiunta al tabellone del giocatore (nella casella dove si è spostato)
+                            aggiornaSchermo(T,players,output);
+                        break;
+                        
+                        case 15:
+                            std::cout << "Andate avanti fino al via e ritirate " << Variabili::moneyPassaggioVia << " " << Variabili::getValuta() + ".\n";
+                            output += "Andate avanti fino al via e ritirate " + std::to_string(Variabili::moneyPassaggioVia) + " " + Variabili::getValuta() + ".\n";
+                            std::this_thread::sleep_for(std::chrono::seconds(pausa));
+                            // Movimento nella casella Via
+                            players[i]->getPosition()->removePlayer(players[i]->getID()); // Rimozione dal tabellone del giocatore dalla casella vecchia
+                            players[i]->goTo("Via");
+                            T.partenza->addPlayer(players[i]->getID()); // Aggiunta al tabellone del giocatore (nella casella dove si è spostato)
+                            aggiornaSchermo(T,players,output);
+                            std::cout << "Giocatore " << players[i]->getID() << " si e' mosso sul via e ha ritirato " <<  Variabili::moneyPassaggioVia << " " << Variabili::getValuta() << ".\n";
+                            output += "Giocatore " + std::to_string(players[i]->getID()) + " si e' mosso sul via e ha ritirato " + std::to_string(Variabili::moneyPassaggioVia) + " " + Variabili::getValuta() + ".\n";
+                            std::this_thread::sleep_for(std::chrono::seconds(pausa));
+                        break;
+                        
+                        case 16:
+                            std::cout << "Giocatore " << players[i]->getID() << " ha ottenuto la carta Uscita gratis di prigione.\n";
+                            players[i]->setFreeExitPrisonProb(true);
+                            nScelteP = 15;
+                        break;
                     }
-                    if (deposit)
+                }
+                // Ho stampato ciò che c'era scritto sull'imprevisto/probabilità (ora se c'è da pagare o depositare si effettua l'operazione, i movimenti sono gestiti caso per caso nello switch)
+                if (pay)
+                {
+                    try
                     {
-                        players[i]->deposit(money);
+                        players[i]->Transaction(money, nullptr, &output);
                         std::this_thread::sleep_for(std::chrono::seconds(pausa));
                         aggiornaSchermo(T,players,output);
-                        std::cout << "Giocatore " << players[i]->getID() << " ha incassato " << money << " " + Variabili::getValuta() + ".\n";
+                        std::cout << "Giocatore " << players[i]->getID() << " ha pagato " << money << " " + Variabili::getValuta() + ".\n";
                     }
+                    catch (const Giocatore::Player_Lost& e)
+                    {
+                        std::this_thread::sleep_for(std::chrono::seconds(pausa));
+                        output += "Giocatore " + std::to_string(players[i]->getID()) + " e' andato in bancarotta e ha perso.\n";
+                        players[i]->getPosition()->removePlayer(players[i]->getID());
+                        aggiornaSchermo(T,players,output);
+                    }
+                }
+                if (deposit)
+                {
+                    players[i]->deposit(money);
+                    std::this_thread::sleep_for(std::chrono::seconds(pausa));
+                    aggiornaSchermo(T,players,output);
+                    std::cout << "Giocatore " << players[i]->getID() << " ha incassato " << money << " " + Variabili::getValuta() + ".\n";
                 }
             }
 
@@ -800,16 +848,8 @@ int main(int argc, char *argv[])
     // Casella terreno
             if (pos1)
             {
-                // Se il giocatore-iesimo è il proprietario e c'è un albergo, il giocatore non può fare nulla
-                if ((pos1->getProprietario() == players[i]) && (pos1->isAlbergo()))
-                {
-                    std::cout << "Terreno del giocatore " << players[i]->getID() << ".\n";
-                    std::this_thread::sleep_for(std::chrono::seconds(pausa));
-                    std::cout << "Giocatore " << players[i]->getID() << " ha gia' costruito tutto il possibile.\n";
-                }
                 // Se la casella laterale non è di nessuno 
-                // o è del giocatore, è senza albergo (ci si può ancora costruire) e il giocatore ha tutte le caselle di quel colore
-                else if (pos1->getProprietario() == nullptr)
+                if (pos1->getProprietario() == nullptr)
                 {
                     std::cout << "Terreno della banca.\n";
                     output += "Terreno della banca.\n";
@@ -854,7 +894,7 @@ int main(int argc, char *argv[])
                                 {
                                     players[i]->_elenco_proprieta[h]->setCanBuy(true);
                                     // e le aggiungo al vettore di proprietà dove il giocatore può decidere se acquistarci case/alberghi
-                                    players[i]->_elenco_proprieta_to_build.push_back(players[i]->_elenco_proprieta[h]);
+                                    players[i]->pushInToBuild(players[i]->_elenco_proprieta[h]);
                                 }
                             }
                         }
@@ -866,16 +906,14 @@ int main(int argc, char *argv[])
                     }
                 }
             // Se il proprietario sono io, ma non posso decidere di costruire nulla perche non ho tutte le caselle simili
-                else if ((pos1->getProprietario() == players[i]) && (!pos1->isAlbergo()) && (!pos1->canBuy()))
+                else if (pos1->getProprietario() == players[i])
                 {
                     std::cout << "Terreno del giocatore " << players[i]->getID() << ".\n";
-                    std::this_thread::sleep_for(std::chrono::seconds(pausa));
-                    std::cout << "Giocatore " << players[i]->getID() << " non ha ancora tutti i terreni di colore " << pos1->getColor() << ", quindi non puo' costruire case.\n";
                     std::this_thread::sleep_for(std::chrono::seconds(pausa));
                     std::cout << "Non succede nulla.\n";
                 }
                 // Terreno di un altro giocatore (devo pagare)
-                else if(pos1->getProprietario() != players[i] && pos1->getProprietario() != nullptr) // questo if non servirebbe per la catena di if/else, ma meglio metterlo
+                else
                 {
                     std::cout << "Terreno del giocatore " << pos1->getProprietario()->getID() << ".\n";
                     output += "Terreno del giocatore " + std::to_string(pos1->getProprietario()->getID()) + ".\n";
@@ -1204,17 +1242,20 @@ int main(int argc, char *argv[])
                     prezzo = pos1->getPrezzo()/2;
                 if (pos4)
                     prezzo = pos4->getPrezzo()/2;
-                // Il giocatore che ha rifiutato di comprare non può partecipare all'asta, inoltre un giocatore partecipa all'asta se ha abbastanza soldi
+
                 for (int w=0; w<players.size(); w++)
                 {
-                    if (players[i]->getID() != players[w]->getID() && players[w]->getMoney() >= prezzo + minimaOffertaAsta)
+                    if (players[i]->getID() != players[w]->getID()) // Il giocatore che non ha voluto comprare la casella non partecipa all'asta
                     {
-                        playersAsta.push_back(players[w]);
-                    }
-                    else if (players[w]->getMoney() < prezzo + minimaOffertaAsta)
-                    {
-                        std::cout << "\nGiocatore " << players[i]->getID() << " non ha abbastanza "<< Variabili::getValuta() << " per partecipare all'asta.";
-                        std::this_thread::sleep_for(std::chrono::seconds(pausa));
+                        if (players[w]->getMoney() >= prezzo + minimaOffertaAsta) // il giocatore partecipa all'asta se ha abbastanza soldi
+                        {
+                            playersAsta.push_back(players[w]);
+                        }
+                        else 
+                        {
+                            std::cout << "\nGiocatore " << players[w]->getID() << " non ha abbastanza "<< Variabili::getValuta() << " per partecipare all'asta.";
+                            std::this_thread::sleep_for(std::chrono::seconds(pausa));
+                        }
                     }
                 }
                 if (!playersAsta.empty())
@@ -1282,54 +1323,53 @@ int main(int argc, char *argv[])
                             playersAsta[0]->buy(prezzo, players[i]->getPosition());
                             aggiornaSchermo(T, players,hey);
                             std::cout << "Giocatore " << playersAsta[0]->getID() << " ha pagato " << prezzo << " " << Variabili::getValuta() << " e ha acquistato " << players[i]->getPosition()->getName() << ".\n";
+                            if (playersAsta[0]->_elenco_proprieta_st.size() > 1 && pos2)
+                            {
+                                std::this_thread::sleep_for(std::chrono::seconds(pausa));
+                                int size = playersAsta[0]->_elenco_proprieta_st.size();
+                                std::string s = std::to_string(size);
+                                if (size == 4)
+                                    s = "tutte e 4 le";
+                                std::cout << "Giocatore " << playersAsta[0]->getID() << " ora possiede " << s << " stazioni.\n";
+                            }
+                            if (playersAsta[0]->_elenco_proprieta_soc.size() == 2 && pos4)
+                            {
+                                std::this_thread::sleep_for(std::chrono::seconds(pausa));
+                                std::cout << "Giocatore " << playersAsta[0]->getID() << " ora possiede tutte e 2 le societa'.\n";
+                            }
+                            if (pos1)   // Se ho acquistato una casella terreno
+                            { // Se è l'ultima di una famiglia di caselle simili
+                                z=0;    //Contatore di altre caselle della stessa famiglia
+                                // Scansiono il vettore _elenco_proprieta del giocatore per vedere se ci sono caselle simili
+                                for (int h=0; h < playersAsta[0]->_elenco_proprieta.size(); h++)
+                                {
+                                    if (pos1->getFamily() == playersAsta[0]->_elenco_proprieta[h]->getFamily())
+                                        z++;
+                                }
+                                // z può essere 1 (nessuna copia trovata), 2 (va bene solo se sono marroni o blu), 3 (ne ho 3 uguali quindi 100% una family)
+                                if ((((pos1->getFamily() == 'M') || (pos1->getFamily() == 'B')) && (z==2)) || (z==3))
+                                {
+                                    std::this_thread::sleep_for(std::chrono::seconds(pausa));
+                                    hey += "Giocatore " + std::to_string(playersAsta[0]->getID()) + " ora ha tutti i terreni di colore " + pos1->getColor() + ".\n";
+                                    // Aggiorno tutte le proprietà che la famiglia è al completo
+                                    for (int h=0; h < playersAsta[0]->_elenco_proprieta.size(); h++)
+                                    {
+                                        if (pos1->getFamily() == playersAsta[0]->_elenco_proprieta[h]->getFamily())
+                                        {
+                                            playersAsta[0]->_elenco_proprieta[h]->setCanBuy(true);
+                                            // e le aggiungo al vettore di proprietà dove il giocatore può decidere se acquistarci case/alberghi
+                                            playersAsta[0]->pushInToBuild(playersAsta[0]->_elenco_proprieta[h]);
+                                        }
+                                    }
+                                    aggiornaSchermo(T, players,hey);
+                                }
+                            }
                         }
                         catch (const Giocatore::Not_Enough_Money& e)    // non dovrebbe mai lanciarla, ma meglio gestirla ...
                         {
                             std::cout << "Tentativo di acquisto non riuscito, " << Variabili::getValuta() << " non sufficenti.\n";
                             std::this_thread::sleep_for(std::chrono::seconds(pausa));
                             std::cout << "Non succede nulla.\n";
-                        }
-                        if (playersAsta[0]->_elenco_proprieta_st.size() > 1 && pos2)
-                        {
-                            std::this_thread::sleep_for(std::chrono::seconds(pausa));
-                            int size = playersAsta[0]->_elenco_proprieta_st.size();
-                            std::string s = std::to_string(size);
-                            if (size == 4)
-                                s = "tutte e 4 le";
-                            std::cout << "Giocatore " << playersAsta[0]->getID() << " ora possiede " << s << " stazioni.\n";
-                        }
-                        if (playersAsta[0]->_elenco_proprieta_soc.size() == 2 && pos4)
-                        {
-                            std::this_thread::sleep_for(std::chrono::seconds(pausa));
-                            std::cout << "Giocatore " << playersAsta[0]->getID() << " ora possiede tutte e 2 le societa'.\n";
-                        }
-                        if (pos1)   // Se ho acquistato una casella terreno
-                        { // Se è l'ultima di una famiglia di caselle simili
-                            z=0;    //Contatore di altre caselle della stessa famiglia
-                            // Scansiono il vettore _elenco_proprieta del giocatore per vedere se ci sono caselle simili
-                            for (int h=0; h < playersAsta[0]->_elenco_proprieta.size(); h++)
-                            {
-                                if (pos1->getFamily() == playersAsta[0]->_elenco_proprieta[h]->getFamily())
-                                    z++;
-                            }
-                            // z può essere 1 (nessuna copia trovata), 2 (va bene solo se sono marroni o blu), 3 (ne ho 3 uguali quindi 100% una family)
-                            if ((((pos1->getFamily() == 'M') || (pos1->getFamily() == 'B')) && (z==2)) || (z==3))
-                            {
-                                std::this_thread::sleep_for(std::chrono::seconds(pausa));
-                                std::cout << "Giocatore " << playersAsta[0]->getID() << " ora ha tutti i terreni di colore " << pos1->getColor() << ".\n";
-                                output += "Giocatore " + std::to_string(playersAsta[0]->getID()) + " ora ha tutti i terreni di colore " + pos1->getColor() + ".\n";
-
-                                // Aggiorno tutte le proprietà che la famiglia è al completo
-                                for (int h=0; h < playersAsta[0]->_elenco_proprieta.size(); h++)
-                                {
-                                    if (pos1->getFamily() == playersAsta[0]->_elenco_proprieta[h]->getFamily())
-                                    {
-                                        playersAsta[0]->_elenco_proprieta[h]->setCanBuy(true);
-                                        // e le aggiungo al vettore di proprietà dove il giocatore può decidere se acquistarci case/alberghi
-                                        players[i]->_elenco_proprieta_to_build.push_back(players[i]->_elenco_proprieta[h]);
-                                    }
-                                }
-                            }
                         }
                     }
                     else

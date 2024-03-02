@@ -242,6 +242,21 @@ Casella_Terreno::Casella_Terreno(std::string N, std::string NB) : Casella(N, NB)
     }
 }
 
+int Casella_Terreno::getStatus() const
+{
+    if (_albergo)
+        return 5;
+    if (_casa4)
+        return 4;
+    if (_casa3)
+        return 3;
+    if (_casa2)
+        return 2;
+    if (_casa1)
+        return 1;
+    return 0; // Se non ci sono case/albergo
+}
+
 void Casella_Terreno::buy(Giocatore *g)
 {
     if (_proprietario == nullptr)      // Se la casella non è di nessuno, si procede all'acquisto del terreno

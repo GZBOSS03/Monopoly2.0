@@ -221,6 +221,16 @@ bool Giocatore::giveTo(Casella_Stazione* A, Giocatore *Other)
     return false; // Se la proprietà non è nell'elenco
 }
 
+std::string Giocatore::getToBuild()
+{
+    std::string s = "";
+    for (int i = 0; i < _elenco_proprieta_to_build.size(); i++)
+    {
+        s += " " + _elenco_proprieta_to_build[i]->getName();
+    }
+    return s;
+}
+
 // Predicati per la funzione di ordinamento
 bool confrontaElementi(const Casella_Terreno* elem1, const Casella_Terreno* elem2) {
     return elem1->getPrezzoTerreno() <= elem2->getPrezzoTerreno();

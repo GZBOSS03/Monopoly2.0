@@ -14,7 +14,7 @@ public:
 
     bool choice(std::string*) override;
     bool partecipaAsta(int*, Casella*, bool, int) override;
-    bool wantToBuild(std::string*, Casella_Terreno*) override;
+    bool wantToBuild(Casella_Terreno*) override;
     void Transaction(int, Giocatore *, std::string *) override;
 };
 

@@ -12,7 +12,8 @@ struct Variabili
     static const std::string getValuta() {return "euro";}
     static const int contoAllaRovescitaDa = 3;
     static const int turnoSbloccoAste = 15; // For the future
-    static const int pausa = 1;
+    static const int pausa = 0;
+
     // Preferibilmete da non modificare
     static const int nFacceDado = 6;
     static const int moneyPassaggioVia = 200;

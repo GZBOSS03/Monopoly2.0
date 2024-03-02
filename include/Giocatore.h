@@ -21,7 +21,7 @@ public:
     // Scelte del giocatore
     virtual bool choice(std::string*) { return false; }; // Il giocatore sceglie se comprare (return true) o no (return false)
     virtual bool partecipaAsta(int*, Casella*, bool, int) { return false; }; // Il giocatore sceglie se comprare (return true) o no (return false)
-    virtual bool wantToBuild (std::string*, Casella_Terreno*) { return true; };
+    virtual bool wantToBuild (Casella_Terreno*) { return true; };
 
     // Funzioni membro
     void buy(); // Effettua l'acquisto della casella su cui il giocatore si trova
@@ -42,6 +42,10 @@ public:
     bool isInJail() const { return _isInJail; }
     bool hasFreeExitPrisonProb() {return FreeExitPrisonProb;}
     bool hasFreeExitPrisonImpr() {return FreeExitPrisonImpr;}
+    std::string getToBuild();
+    void pushInToBuild(Casella_Terreno* A) 
+    { if (A) _elenco_proprieta_to_build.push_back(A);
+      else   std::cout << "Puntatore non valido.\n";  }
 
     // Funzioni SET
     void setJail(bool t)  { _isInJail = t;  if(!t) _turniJail=1; }

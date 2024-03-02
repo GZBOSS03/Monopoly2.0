@@ -5,30 +5,19 @@ bool Human::choice(std::string* p){
     Casella_Terreno *posNow = dynamic_cast<Casella_Terreno *>(_pos);
     Casella_Stazione *posNow1 = dynamic_cast<Casella_Stazione *>(_pos);
     Casella_Societa *posNow2 = dynamic_cast<Casella_Societa *>(_pos);
+
     if (posNow)
     {
-        if (_money < posNow->getPrezzo())
+        if (_money < posNow->getPrezzoTerreno())
         {
             std::cout << "Giocatore " << _ID << " non ha abbastanza " << Variabili::getValuta() << " per l'acquisto.\n";
             *p += "Giocatore " + std::to_string(_ID) + " non ha abbastanza " + Variabili::getValuta() + " per l'acquisto.\n";
             return false;
         }
-        if (posNow->isCasa4()&&(!posNow->isAlbergo())) //verifico che ci sia una casa e NON ci sia un albergo
-        {
-            std::cout << "Giocatore " << _ID << " vuoi costruire un albergo su tutte le proprieta' di colore " << posNow->getColor() << " per " << posNow->getPrezzo() << "? (Inserire S per si, N per no)\n";
-            *p += "Giocatore " + std::to_string(_ID) + " vuoi costruire un albergo su tutte le proprieta' di colore " + posNow->getColor() + " per " + std::to_string(posNow->getPrezzo()) + "? (Inserire S per si, N per no)\n";
-        }
-        else if (posNow->canBuy() && !posNow->isCasa4())
-        {
-            std::cout << "Giocatore " << _ID << " vuoi costruire una casa su tutte le proprieta' di colore " << posNow->getColor() << " per " << posNow->getPrezzo() << "? (Inserire S per si, N per no)\n";
-            *p += "Giocatore " + std::to_string(_ID) + " vuoi costruire una casa su tutte le proprieta' di colore " + posNow->getColor() + " per " + std::to_string(posNow->getPrezzo()) + "? (Inserire S per si, N per no)\n";
-        }
-        else
-        {
-            std::cout << "Giocatore " << _ID << " vuoi comprare " << posNow->getName() << " per " << posNow->getPrezzo() << "? (Inserire S per si, N per no)\n";
-            *p += "Giocatore " + std::to_string(_ID) + " vuoi comprare " + posNow->getName() + " per " + std::to_string(posNow->getPrezzo()) + "? (Inserire S per si, N per no)\n";
-        }
+        std::cout << "Giocatore " << _ID << " vuoi comprare " << posNow->getName() << " per " << posNow->getPrezzo() << "? (Inserire S per si, N per no)\n";
+        *p += "Giocatore " + std::to_string(_ID) + " vuoi comprare " + posNow->getName() + " per " + std::to_string(posNow->getPrezzo()) + "? (Inserire S per si, N per no)\n";
     }
+    
     if (posNow1)
     {
         if (_money < posNow1->getPrezzo())
@@ -37,12 +26,10 @@ bool Human::choice(std::string* p){
             *p += "Giocatore " + std::to_string(_ID) + " non ha abbastanza " + Variabili::getValuta() + " per l'acquisto.\n";
             return false;
         }
-        else
-        {
-            std::cout << "Giocatore " << _ID << " vuoi comprare " << posNow1->getName() << " per " << posNow1->getPrezzo() << "? (Inserire S per si, N per no)\n";
-            *p += "Giocatore " + std::to_string(_ID) + " vuoi comprare " + posNow1->getName() + " per " + std::to_string(posNow1->getPrezzo()) + "? (Inserire S per si, N per no)\n";
-        }
+        std::cout << "Giocatore " << _ID << " vuoi comprare " << posNow1->getName() << " per " << posNow1->getPrezzo() << "? (Inserire S per si, N per no)\n";
+        *p += "Giocatore " + std::to_string(_ID) + " vuoi comprare " + posNow1->getName() + " per " + std::to_string(posNow1->getPrezzo()) + "? (Inserire S per si, N per no)\n";
     }
+
     if (posNow2)
     {
         if (_money < posNow2->getPrezzo())
@@ -51,12 +38,10 @@ bool Human::choice(std::string* p){
             *p += "Giocatore " + std::to_string(_ID) + " non ha abbastanza " + Variabili::getValuta() + " per l'acquisto.\n";
             return false;
         }
-        else
-        {
-            std::cout << "Giocatore " << _ID << " vuoi comprare " << posNow2->getName() << " per " << posNow2->getPrezzo() << "? (Inserire S per si, N per no)\n";
-            *p += "Giocatore " + std::to_string(_ID) + " vuoi comprare " + posNow2->getName() + " per " + std::to_string(posNow2->getPrezzo()) + "? (Inserire S per si, N per no)\n";
-        }
+        std::cout << "Giocatore " << _ID << " vuoi comprare " << posNow2->getName() << " per " << posNow2->getPrezzo() << "? (Inserire S per si, N per no)\n";
+        *p += "Giocatore " + std::to_string(_ID) + " vuoi comprare " + posNow2->getName() + " per " + std::to_string(posNow2->getPrezzo()) + "? (Inserire S per si, N per no)\n";
     }
+
     if (_isInJail)
     {
         if (_money < Variabili::moneyUscitaPrigione)    // Se non ha soldi non può pagare, allora tira i dadi
@@ -65,11 +50,8 @@ bool Human::choice(std::string* p){
             *p += "Giocatore " + std::to_string(_ID) + " non ha abbastanza soldi per uscire di prigione, quindi tira i dadi.\n";
             return false;
         }
-        else
-        {
-            std::cout << "Giocatore " << _ID << " vuoi pagare " << Variabili::moneyUscitaPrigione << " " << Variabili::getValuta() << " ed uscire di prigione? (Inserire S per si, N per no)\n";
-            *p += "Giocatore " + std::to_string(_ID) + " vuoi pagare " + std::to_string(Variabili::moneyUscitaPrigione) + " ed uscire di prigione? (Inserire S per si, N per no)\n";
-        }
+        std::cout << "Giocatore " << _ID << " vuoi pagare " << Variabili::moneyUscitaPrigione << " " << Variabili::getValuta() << " ed uscire di prigione? (Inserire S per si, N per no)\n";
+        *p += "Giocatore " + std::to_string(_ID) + " vuoi pagare " + std::to_string(Variabili::moneyUscitaPrigione) + " ed uscire di prigione? (Inserire S per si, N per no)\n";
     }
 
     do
@@ -103,38 +85,25 @@ bool Human::choice(std::string* p){
     return false; // Non lo farà mai perchè ritorna nel do while quando l'utente inserisce S o N
 }
 
-bool Human::wantToBuild(std::string* p, Casella_Terreno* A){
+bool Human::wantToBuild(Casella_Terreno* A){
     
     if (_money < A->getPrezzo()) // Se il giocatore non ha abbastanza soldi per costruire
         return false;
+
     std::string tmp = "una casa in ";
     if (A->isCasa4())
         tmp = "un albergo in ";
-    std:: cout << "Giocatore " + std::to_string(_ID) + ", vuoi acquistare " + tmp + A->getName() + " per " << A->getPrezzo() << " " << Variabili::getValuta() + ".\n";
-    *p += "Giocatore " + std::to_string(_ID) + ", vuoi acquistare " + tmp + A->getName() + " per " + std::to_string(A->getPrezzo()) + " " + Variabili::getValuta() + ".\n";
+    std:: cout << "Giocatore " + std::to_string(_ID) + ", vuoi acquistare " + tmp + A->getName() + " per " << A->getPrezzo() << " " << Variabili::getValuta() + "? (Inserire S per si, N per no)\n";
     do
     {
         char risposta;
         std::cin >> risposta;
         if (risposta == 'S' || risposta == 's')
         {
-            if (risposta == 'S')
-                *p += "S\n";
-            else
-                *p += "s\n";
             return true;
         }
         else if (risposta == 'N' || risposta == 'n')
         {
-            if (risposta == 'N')
-                *p += "N\n";
-            else
-                *p += "n\n";
-            if (_isInJail)
-            {
-                std::cout << "Giocatore " + std::to_string(_ID) + " vuole tentare la sorte con i dadi.\n";
-                *p += "Giocatore " + std::to_string(_ID) + " vuole tentare la sorte con i dadi.\n";
-            }
             return false;
         } else
             std::cout << "Comando non riconosciuto (Inserire S per si, N per no)\n";
@@ -330,8 +299,8 @@ void Human::Transaction(int n, Giocatore *Other, std::string *output){
             else if(_elenco_proprieta.empty() && _elenco_proprieta_st.empty() && _elenco_proprieta_soc.empty())
             {
                 // Se il giocatore non ha più nulla da ipotecare, paga tutti i soldi che ha ...
-                std::cout << "Giocatore " + std::to_string(_ID) + "non ha piu nulla da ipotecare e non riesce a pagare.";
-                *toAdd += "Giocatore " + std::to_string(_ID) + "non ha piu nulla da ipotecare e non riesce a pagare.";
+                std::cout << "Giocatore " + std::to_string(_ID) + " non ha piu nulla da ipotecare e non riesce a pagare.\n";
+                *toAdd += "Giocatore " + std::to_string(_ID) + " non ha piu nulla da ipotecare e non riesce a pagare.\n";
                 std::this_thread::sleep_for(std::chrono::seconds(pausa));
                 std::string s = "Giocatore " + std::to_string(_ID) + " ha pagato tutti i suoi " + Variabili::getValuta() + ", " + std::to_string(_money);
                 if (Other)
@@ -456,8 +425,6 @@ void Human::Transaction(int n, Giocatore *Other, std::string *output){
                             if (gg == 'S' || gg == 's')
                             {
                                 int schei = _elenco_proprieta[i]->getPrezzo()/2;
-                                if (_elenco_proprieta[i]->isCasa1())
-                                    schei = schei /_elenco_proprieta[i]->getNFamily();
                                 std::cout << "Giocatore " << _ID << " ha ipotecato" << k << _elenco_proprieta[i]->getName() << " e ha ricavato " << schei << " " << Variabili::getValuta() << ".\n";
                                 *toAdd += "-" + k + _elenco_proprieta[i]->getName() + " (" + std::to_string(schei) + ")\n";
                                 deposit(schei);

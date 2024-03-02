@@ -36,6 +36,8 @@ public:
     bool isCasa4() const { return _casa4; }
     bool isAlbergo() const { return _albergo; }
     bool canBuy() const { return _canBuy; }
+    int getStatus() const;  // Restituisco un numero che mi indica a che punto sono i lavori di costruzione
+
     int getNFamily() const { return _nForFamily; }
     std::string getColor() const;
     
