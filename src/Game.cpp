@@ -6,6 +6,7 @@ std::pair<int,int> getDiceRoll();                   // restituisce la somme di d
 void startingOrder(std::vector<Giocatore *> &players); // ordina i players in base ai lanci dei dadi
 void aggiornaSchermo(Tabellone, std::vector<Giocatore *>, std::string);
 void clearScreen() { system("cls"); }
+int findMinMoneyToBuild(std::vector<Casella_Terreno*>);
 int tiriIniziali = 0;
 int pausa = Variabili::pausa;  // Pausa che il programma fa in output tra una stampa e la successiva
 
@@ -14,6 +15,7 @@ int main(int argc, char *argv[])
 // Dichiarazione di variabili
     int j = 0,z=0;  // j = Contatore di turni, z = contatore di proprietà sdello stesso colore (usata anche come nGiocatori ad inizio game)
     int nMaxTurni = 200, nScelteP = 16, nScelteI = 16, minimaOffertaAsta = 10;
+    int turniVeloci = 0;
     std::pair<int,int> tiro;
     std::string muro="";
     for (int i = 0; i < Variabili::dimMaxOutput; i++)
@@ -26,14 +28,12 @@ int main(int argc, char *argv[])
     clearScreen();
     std::cout << muro << "\nBenvenuto/a, sta per iniziare una partita di Monopoly.";
     std::cout << "\nInserire il numero di giocatori (da 2 a 6):\n";
-    do
+    while (!(std::cin >> z) || z < 2 || z > 6)
     {
-        std::cin >> z;
-        if (z < 2 || z > 6)
-        {
-            std::cout << "Comando non valido, inserire un numero da 2 a 6:\n";
-        }
-    } while (z < 2 || z > 6);
+        std::cin.clear(); // Pulisce lo stato dell'input
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Ignora il resto dell'input fino a newline
+        std::cout << "Input non valido. Inserisci un numero da 2 a 6:\n";
+    }
 
 // Creazione dei giocatori
     // Creazione dei giocatori e relativo push nel vettore di players
@@ -64,13 +64,25 @@ int main(int argc, char *argv[])
             std::cout << ", Human.\n";
         
     }
-    std::cout << "Tutti i giocatori sono stati creati.\n" << muro;
+    std::cout << "\nTutti i giocatori sono stati creati.\n" << muro;
     std::this_thread::sleep_for(std::chrono::seconds(pausa));
+
+// Richiesta di quanti turni velocizzare (dal primo fino ad n inserito dall'utente, con n = turniVeloci)
     clearScreen();
-    std::cout << muro << "\nTutti i giocatori lanciano i dadi per determinare l'ordine di gioco.\n";
+    std::cout << muro << "\nVuoi velocizzare il gioco?\nSe SI inserisci il numero di turni che vuoi velocizzare\nSe NO inserisci 0\n";
+    while (!(std::cin >> turniVeloci) || turniVeloci < 0)
+    {
+        std::cin.clear(); // Pulisce lo stato dell'input
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Ignora il resto dell'input fino a newline
+        std::cout << "Input non valido. Inserisci un numero intero:\n";
+    }
+    std::cout << "\nHai selezionato " << turniVeloci << " turni da velocizzare.\n" << muro;
     std::this_thread::sleep_for(std::chrono::seconds(pausa));
 
 // Tutti i giocatori lanciano i dadi per determinare l’ordine di gioco (ordinamento di players)
+    clearScreen();
+    std::cout << muro << "\nTutti i giocatori lanciano i dadi per determinare l'ordine di gioco.\n";
+    std::this_thread::sleep_for(std::chrono::seconds(pausa));
     startingOrder(players);
     std::cout << "\nOrdine dei giocatori:";
     for (int i = 0; i < players.size(); i++)
@@ -98,7 +110,14 @@ int main(int argc, char *argv[])
     while (winner.empty())
     {
         j++; // aumento il conteggio dei turni
-        
+        if (j < turniVeloci)   // Per velocizzare l'inizio game
+        {
+            pausa = 0;
+        }
+        else
+        {
+            pausa = Variabili::pausa;
+        }
 // Verifico che non siano passati troppi turni, altrimenti il gioco è in stallo, quindi finisce
         if ((j >= nMaxTurni))   // Arrivo al turno di gioco max per ogni giocatore, il gioco si ferma e vince chi ha più soldi
         {
@@ -157,21 +176,24 @@ int main(int argc, char *argv[])
         if (!players[i]->_elenco_proprieta_to_build.empty())
         {
             bool playerCanBuild = true; // se ci sono le condizioni per l'acquisto di case/alberghi
-            if (players[i]->getMoney() < players[i]->_elenco_proprieta_to_build[0]->getPrezzo())
-            {   // Se il giocatore non ha abbastanza soldi per comprare una casa/albergo
-                playerCanBuild = false;
-            }
             bool terreniEdificabili = false;
             // Controllo se posso costruire (se ci sono tutti alberghi non posso costruire nulla)
             for (int d = 0; d < players[i]->_elenco_proprieta_to_build.size(); d++)
             {
                 if (!players[i]->_elenco_proprieta_to_build[d]->isAlbergo())    // Se almeno in uno degli elementi del vettore non c'è ancora un albergo
+                {
                     terreniEdificabili = true;
+                }
             }
             if (!terreniEdificabili)
                 playerCanBuild = false;
+            // Se il giocatore non ha abbastanza soldi per comprare una casa/albergo
+            if (players[i]->getMoney() < findMinMoneyToBuild(players[i]->_elenco_proprieta_to_build))
+            {
+                playerCanBuild = false;
+            }
             // Se playerCanBuild è true significa che il giocatore ha abbastanza soldi e ci sono terreni su cui può costruire
-            if (playerCanBuild) 
+            if (playerCanBuild)
             {
                 if (dynamic_cast<Human*>(players[i]))
                 {
@@ -501,14 +523,14 @@ int main(int argc, char *argv[])
                             {
                                 if (counterCase > 0)
                                 {
-                                    std::cout << "\nGiocatore " << players[i]->getID() << " ha " << counterCase << " case.\n";
-                                    output += "\nGiocatore " + std::to_string(players[i]->getID()) + " possiede " + std::to_string(counterCase) + " case.\n";
+                                    std::cout << "\nGiocatore " << players[i]->getID() << " ha " << counterCase << " case.";
+                                    output += "\nGiocatore " + std::to_string(players[i]->getID()) + " possiede " + std::to_string(counterCase) + " case.";
                                     std::this_thread::sleep_for(std::chrono::seconds(pausa));
                                 }
                                 if (counterAlb > 0) 
                                 {
-                                    std::cout << "\nGiocatore " << players[i]->getID() << " ha " << counterAlb << " alberghi.\n";
-                                    output += "\nGiocatore " + std::to_string(players[i]->getID()) + " possiede " + std::to_string(counterAlb) + " alberghi.\n";
+                                    std::cout << "\nGiocatore " << players[i]->getID() << " ha " << counterAlb << " alberghi.";
+                                    output += "\nGiocatore " + std::to_string(players[i]->getID()) + " possiede " + std::to_string(counterAlb) + " alberghi.";
                                     std::this_thread::sleep_for(std::chrono::seconds(pausa));
                                 }
                             
@@ -727,14 +749,14 @@ int main(int argc, char *argv[])
                             {
                                 if (counterCase > 0)
                                 {
-                                    std::cout << "\nGiocatore " << players[i]->getID() << " ha " << counterCase << " case.\n";
-                                    output += "\nGiocatore " + std::to_string(players[i]->getID()) + " possiede " + std::to_string(counterCase) + " case.\n";
+                                    std::cout << "\nGiocatore " << players[i]->getID() << " ha " << counterCase << " case.";
+                                    output += "\nGiocatore " + std::to_string(players[i]->getID()) + " possiede " + std::to_string(counterCase) + " case.";
                                     std::this_thread::sleep_for(std::chrono::seconds(pausa));
                                 }
                                 if (counterAlb > 0) 
                                 {
-                                    std::cout << "\nGiocatore " << players[i]->getID() << " ha " << counterAlb << " alberghi.\n";
-                                    output += "\nGiocatore " + std::to_string(players[i]->getID()) + " possiede " + std::to_string(counterAlb) + " alberghi.\n";
+                                    std::cout << "\nGiocatore " << players[i]->getID() << " ha " << counterAlb << " alberghi.";
+                                    output += "\nGiocatore " + std::to_string(players[i]->getID()) + " possiede " + std::to_string(counterAlb) + " alberghi.";
                                     std::this_thread::sleep_for(std::chrono::seconds(pausa));
                                 }
                                 std::cout << "\nGiocatore " << players[i]->getID() << " deve pagare " << counterCase << " x 40 + " << counterAlb << " x 115 = " << money << " " << Variabili::getValuta() << ".\n";
@@ -1278,10 +1300,10 @@ int main(int argc, char *argv[])
 // Asta in caso il giocatore non abbia voluto acquistare un terreno
             if(!sold)
             {
-                std::string hey = "\n" + muro;
+                std::string hey = "\n" + muro + "\n";
                 aggiornaSchermo(T,players,hey);
-                hey += "\nGiocatore " + std::to_string(players[i]->getID()) + " non ha acquistato " + players[i]->getPosition()->getName() + ", quindi inizia l'asta.";
-                std::cout << "\nGiocatore " << players[i]->getID() << " non ha acquistato " << players[i]->getPosition()->getName() << ", quindi inizia l'asta.";
+                hey += "Giocatore " + std::to_string(players[i]->getID()) + " non ha acquistato " + players[i]->getPosition()->getName() + ", quindi inizia l'asta.\n";
+                std::cout << "Giocatore " << players[i]->getID() << " non ha acquistato " << players[i]->getPosition()->getName() << ", quindi inizia l'asta.\n";
                 std::this_thread::sleep_for(std::chrono::seconds(pausa));
                 std::vector<Giocatore *> playersAsta;
                 bool noOneWants = true;
@@ -1303,7 +1325,7 @@ int main(int argc, char *argv[])
                         }
                         else 
                         {
-                            std::cout << "\nGiocatore " << players[w]->getID() << " non ha abbastanza "<< Variabili::getValuta() << " per partecipare all'asta.";
+                            std::cout << "Giocatore " << players[w]->getID() << " non ha abbastanza "<< Variabili::getValuta() << " per partecipare all'asta.\n";
                             std::this_thread::sleep_for(std::chrono::seconds(pausa));
                         }
                     }
@@ -1312,8 +1334,8 @@ int main(int argc, char *argv[])
                 {
                     do
                     {
-                        std::cout << "\nAll'asta partecipano i seguenti giocatori:";
-                        hey += "\nAll'asta partecipano i seguenti giocatori:";
+                        std::cout << "All'asta partecipano i seguenti giocatori:";
+                        hey += "All'asta partecipano i seguenti giocatori:";
                         for (int z=0; z < playersAsta.size(); z++)
                         {
                             std::cout << " " << playersAsta[z]->getID();
@@ -1357,7 +1379,7 @@ int main(int argc, char *argv[])
                         }
                         if (playersAsta.size() >= 2)
                         {
-                            hey ="\n" + muro;
+                            hey = "\n" + muro + "\n";
                             aggiornaSchermo(T, players,hey);
                         }
 
@@ -1424,7 +1446,7 @@ int main(int argc, char *argv[])
                         std::cout << "Nessun giocatore ha mostrato interersse per l'acquisto.\n";
                 }
                 else
-                    std::cout << "\nNessun giocatore ha abbastanza " << Variabili::getValuta() << " per partecipare all'asta.\n";
+                    std::cout << "Nessun giocatore ha abbastanza " << Variabili::getValuta() << " per partecipare all'asta.\n";
                     
                 std::this_thread::sleep_for(std::chrono::seconds(pausa));
                 std::cout << "Fine asta.\n" << muro;
@@ -1467,6 +1489,7 @@ int main(int argc, char *argv[])
     }
     std::cout << "\n" << muro;
 
+    std::this_thread::sleep_for(std::chrono::seconds(10));
     return 0;
 }
 
@@ -1588,4 +1611,17 @@ void aggiornaSchermo(Tabellone t, std::vector<Giocatore *> p, std::string s)
 
     // Ri-stampa eventi di gioco (già stampati precedentemente)
     std::cout << s;
+}
+
+int findMinMoneyToBuild(std::vector<Casella_Terreno*> v)
+{   // v è già ordinato (per prezzo da pagare), a me va bene il primo che trovo (cercando dal più basso di prezzo), ma che non abbia un albergo
+    for (int i=0; i < v.size(); i++)
+    {
+        if (!v[i]->isAlbergo()) // Se non c'è lalbergo
+        {
+            return v[i]->getPrezzo();
+        }
+    }
+    return Variabili::initialMoney*20;  // Se sono arrivato qui significa che in v ci sono solo caselle con alberghi (o non c'è alcuna casella)
+    // quindi restituisco un numero enorme che il giocatore non potrà mai raggiungere (questo perchè non può scegliere di costruire nulla in entrambi i casi)
 }

@@ -75,7 +75,10 @@ std::ostream &operator<<(std::ostream &os, Casella A)
 // Inizia la stampa 
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);    
     os << pre;
-    os << "| ";
+    if (A._players.size() == 6)
+        os << "|";  // Senza spazio
+    else
+        os << "| ";
     if (A.getNameOutput().substr(0,2) == "St")
         SetConsoleTextAttribute(hConsole, FOREGROUND_INTENSITY | 0);
     if (A.getNameOutput().substr(0,2) == "So")
@@ -95,7 +98,10 @@ std::ostream &operator<<(std::ostream &os, Casella A)
         os << std::setw(10) << playerFormatted.str();
     }
 
-    os << " |";
+    if (A._players.size() == 6)
+        os << "|";  // Senza spazio
+    else
+        os << " |";
     os << post;
     
     return os;

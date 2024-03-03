@@ -130,11 +130,11 @@ bool Human::partecipaAsta(int* p, Casella*, bool, int minimaOffertaAsta){
             {
                 do
                 {
-                    std::cout << "Inserisci di quanto vuoi rilanciare (" << minimaOffertaAsta << "-" << (_money-*p) << "): ";
+                    std::cout << "Inserisci di quanto vuoi rilanciare (" << minimaOffertaAsta << "-" << (_money-*p) << "):\n";
                     while (!(std::cin >> rilancio)) {
                     std::cin.clear(); // Pulisce lo stato dell'input
                     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Ignora il resto dell'input fino a newline
-                    std::cout << "Input non valido. Inserisci un numero intero: ";
+                    std::cout << "Input non valido. Inserisci un numero intero:\n";
                     }
                     if(rilancio > (_money-*p) || rilancio < minimaOffertaAsta)
                     {
