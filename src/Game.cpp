@@ -15,8 +15,9 @@ int main(int argc, char *argv[])
 // Dichiarazione di variabili
     int j = 0,z=0;  // j = Contatore di turni, z = contatore di proprietà sdello stesso colore (usata anche come nGiocatori ad inizio game)
     int nMaxTurni = 200, nScelteP = 16, nScelteI = 16, minimaOffertaAsta = 10;
-    int turniVeloci = 0;
+    int turniVeloci = 0, pausaLunga = 5;
     std::pair<int,int> tiro;
+    std::string outputFinale = "";
     std::string muro="";
     for (int i = 0; i < Variabili::dimMaxOutput; i++)
         muro += "*";  
@@ -338,16 +339,17 @@ int main(int argc, char *argv[])
                                 try
                                 {
                                     players[i]->Transaction(50, nullptr, &output);
+                                    aggiornaSchermo(T,players,output);
                                     goodTransaction = true;
                                 }
                                 catch (const Giocatore::Player_Lost& e)
                                 {
-                                    std::this_thread::sleep_for(std::chrono::seconds(pausa));
+                                    aggiornaSchermo(T,players,output);
+                                    std::this_thread::sleep_for(std::chrono::seconds(pausaLunga));
                                     output += "Giocatore " + std::to_string(players[i]->getID()) + " e' andato in bancarotta e ha perso.\n";
                                     T.prison->removePlayer(players[i]->getID());
                                     goodTransaction = false;
                                 }
-                                aggiornaSchermo(T,players,output);
                                 if (goodTransaction == false)
                                 {
                                     std::this_thread::sleep_for(std::chrono::seconds(pausa));
@@ -647,10 +649,13 @@ int main(int argc, char *argv[])
                                     try
                                     {
                                         players[i]->Transaction(50, players[bob], &output);
+                                        std::cout << "Giocatore " << players[i]->getID() << " ha pagato 50 " << Variabili::getValuta() << " al giocatore " << players[bob]->getID() << ".\n";
+                                        output += "Giocatore " + std::to_string(players[i]->getID()) + " ha pagato 50 " + Variabili::getValuta() + " al giocatore " + std::to_string(players[bob]->getID()) + ".\n";
+                                        std::this_thread::sleep_for(std::chrono::seconds(pausa));
                                     }
                                     catch (const Giocatore::Player_Lost& e)
                                     {
-                                        std::this_thread::sleep_for(std::chrono::seconds(pausa));
+                                        std::this_thread::sleep_for(std::chrono::seconds(pausaLunga));
                                         output += "Giocatore " + std::to_string(players[i]->getID()) + " e' andato in bancarotta e ha perso.\n";
                                         players[i]->getPosition()->removePlayer(players[i]->getID());
                                     }
@@ -834,18 +839,22 @@ int main(int argc, char *argv[])
                             {
                                 if (players[bob]->getID() != players[i]->getID())
                                 {
-                                    tmpMoney = players[bob]->getMoney();
+                                    int tmpM = players[bob]->getMoney();
                                     try
                                     {
                                         players[bob]->Transaction(50, players[i], &output);
+                                        std::cout << "Giocatore " << players[bob]->getID() << " ha pagato 50 " << Variabili::getValuta() << " al giocatore " << players[i]->getID() << ".\n";
+                                        output += "Giocatore " + std::to_string(players[bob]->getID()) + " ha pagato 50 " + Variabili::getValuta() + " al giocatore " + std::to_string(players[i]->getID()) + ".\n";
+                                        std::this_thread::sleep_for(std::chrono::seconds(pausa));
+                                        guadagno += 50;
                                     }
                                     catch (const Giocatore::Player_Lost& e)
                                     {
-                                        std::this_thread::sleep_for(std::chrono::seconds(pausa));
+                                        guadagno += tmpM;
+                                        std::this_thread::sleep_for(std::chrono::seconds(pausaLunga));
                                         output += "Giocatore " + std::to_string(players[bob]->getID()) + " e' andato in bancarotta e ha perso.\n";
                                         players[bob]->getPosition()->removePlayer(players[bob]->getID());
                                     }
-                                    guadagno += tmpMoney - players[bob]->getMoney();
                                 }
                             }
                             aggiornaSchermo(T,players,output);
@@ -888,19 +897,19 @@ int main(int argc, char *argv[])
                 // Ho stampato ciò che c'era scritto sull'imprevisto/probabilità (ora se c'è da pagare o depositare si effettua l'operazione, i movimenti sono gestiti caso per caso nello switch)
                 if (pay)
                 {
+                    std::this_thread::sleep_for(std::chrono::seconds(pausa));
                     try
                     {
                         players[i]->Transaction(money, nullptr, &output);
-                        std::this_thread::sleep_for(std::chrono::seconds(pausa));
                         aggiornaSchermo(T,players,output);
                         std::cout << "Giocatore " << players[i]->getID() << " ha pagato " << money << " " + Variabili::getValuta() + ".\n";
                     }
                     catch (const Giocatore::Player_Lost& e)
                     {
-                        std::this_thread::sleep_for(std::chrono::seconds(pausa));
-                        output += "Giocatore " + std::to_string(players[i]->getID()) + " e' andato in bancarotta e ha perso.\n";
-                        players[i]->getPosition()->removePlayer(players[i]->getID());
                         aggiornaSchermo(T,players,output);
+                        std::this_thread::sleep_for(std::chrono::seconds(pausaLunga));
+                        std::cout << "Giocatore " + std::to_string(players[i]->getID()) + " e' andato in bancarotta e ha perso.\n";
+                        players[i]->getPosition()->removePlayer(players[i]->getID());
                     }
                 }
                 if (deposit)
@@ -1033,20 +1042,16 @@ int main(int argc, char *argv[])
                     try
                     {
                         players[i]->Transaction(pos1->getAffitto(), pos1->getProprietario(), &output);
-                        // Il metodo Transfert gestisce l'eccezione lanciata in caso di mancanza di soldi eliminando
-                        // il giocatore (se deve pagare 10 e ha solo 5 paga 5, arriva a 0 euro, perde tutte le proprietà
-                        // (che tornano senza proprietario, nuovamente acquistabili) e viene settato che ha perso, quando
-                        // tutti i giocatori avranno finito il loro turno il giocatore verrà rimosso dal vettore player, vedi codice uscito dal ciclo for).
+                        aggiornaSchermo(T,players,output);
                         std::cout << "Giocatore " << players[i]->getID() << " ha pagato " << pos1->getAffitto() << " " << Variabili::getValuta() << " al giocatore " << pos1->getProprietario()->getID() << ".\n";
-                        output += "Giocatore " + std::to_string(players[i]->getID()) + " ha pagato " + std::to_string(pos1->getAffitto()) + " " + Variabili::getValuta() + " al giocatore " + std::to_string(pos1->getProprietario()->getID()) + ".\n";
                     }
                     catch (const Giocatore::Player_Lost& e)
                     {
-                        std::this_thread::sleep_for(std::chrono::seconds(pausa));
-                        output += "Giocatore " + std::to_string(players[i]->getID()) + " e' andato in bancarotta e ha perso.\n";
+                        aggiornaSchermo(T,players,output);
+                        std::this_thread::sleep_for(std::chrono::seconds(pausaLunga));
+                        std::cout << "Giocatore " + std::to_string(players[i]->getID()) + " e' andato in bancarotta e ha perso.\n";
                         players[i]->getPosition()->removePlayer(players[i]->getID()); // Rimozione dal tabellone del giocatore dalla casella vecchia
                     }
-                    aggiornaSchermo(T,players,output);
                 }
             }
     // Casella stazione
@@ -1130,20 +1135,16 @@ int main(int argc, char *argv[])
                     try
                     {
                         players[i]->Transaction(toPay, pos2->getProprietario(), &output);
-                        // Il metodo Transfert gestisce l'eccezione lanciata in caso di mancanza di soldi eliminando
-                        // il giocatore (se deve pagare 10 e ha solo 5 paga 5, arriva a 0 euro, perde tutte le proprietà
-                        // (che tornano senza proprietario, nuovamente acquistabili) e viene settato che ha perso, quando
-                        // tutti i giocatori avranno finito il loro turno il giocatore verrà rimosso dal vettore player, vedi codice uscito dal ciclo for).
+                        aggiornaSchermo(T,players,output);
                         std::cout << "Giocatore " << players[i]->getID() << " ha pagato un affitto di " << toPay << " " << Variabili::getValuta() << " al giocatore " << pos2->getProprietario()->getID() << ".\n";
-                        output += "Giocatore " + std::to_string(players[i]->getID()) + " ha pagato un affitto di " + std::to_string(toPay) + " " + Variabili::getValuta() + " al giocatore " + std::to_string(pos2->getProprietario()->getID()) + ".\n";
                     }
                     catch (const Giocatore::Player_Lost& e)
                     {
-                        std::this_thread::sleep_for(std::chrono::seconds(pausa));
-                        output += "Giocatore " + std::to_string(players[i]->getID()) + " e' andato in bancarotta e ha perso.\n";
+                        aggiornaSchermo(T,players,output);
+                        std::this_thread::sleep_for(std::chrono::seconds(pausaLunga));
+                        std::cout << "Giocatore " + std::to_string(players[i]->getID()) + " e' andato in bancarotta e ha perso.\n";
                         players[i]->getPosition()->removePlayer(players[i]->getID()); // Rimozione dal tabellone del giocatore dalla casella vecchia
                     }
-                    aggiornaSchermo(T,players,output);
                 }
             }
     // Casella tasse
@@ -1153,16 +1154,16 @@ int main(int argc, char *argv[])
                 try
                 {
                     players[i]->Transaction(pos3->getTax(), nullptr, &output);  //nullptr è la banca
+                    aggiornaSchermo(T,players,output);
                     std::cout << "Giocatore " << players[i]->getID() << " ha pagato " << pos3->getTax() << " " << Variabili::getValuta() << " di tasse.\n";
-                    output += "Giocatore " + std::to_string(players[i]->getID()) + " ha pagato " + std::to_string(pos3->getTax()) + " " + Variabili::getValuta() + " di tasse.\n";
                 }
                 catch (const Giocatore::Player_Lost& e)
                 {
-                    std::this_thread::sleep_for(std::chrono::seconds(pausa));
-                    output += "Giocatore " + std::to_string(players[i]->getID()) + " e' andato in bancarotta e ha perso.\n";
+                    aggiornaSchermo(T,players,output);
+                    std::this_thread::sleep_for(std::chrono::seconds(pausaLunga));
+                    std::cout << "Giocatore " + std::to_string(players[i]->getID()) + " e' andato in bancarotta e ha perso.\n";
                     players[i]->getPosition()->removePlayer(players[i]->getID()); // Rimozione dal tabellone del giocatore dalla casella vecchia
                 }
-                aggiornaSchermo(T,players,output);
             }
     // Casella Società
             else if (pos4)
@@ -1239,20 +1240,16 @@ int main(int argc, char *argv[])
                     try
                     {
                         players[i]->Transaction(toPay, pos4->getProprietario(), &output);
-                        // Il metodo Transfert gestisce l'eccezione lanciata in caso di mancanza di soldi eliminando
-                        // il giocatore (se deve pagare 10 e ha solo 5 paga 5, arriva a 0 euro, perde tutte le proprietà
-                        // (che tornano senza proprietario, nuovamente acquistabili) e viene settato che ha perso, quando
-                        // tutti i giocatori avranno finito il loro turno il giocatore verrà rimosso dal vettore player, vedi codice uscito dal ciclo for).
+                        aggiornaSchermo(T,players,output);
                         std::cout << "Giocatore " << players[i]->getID() << " ha pagato un affitto di " << toPay << " " << Variabili::getValuta() << " al giocatore " << pos4->getProprietario()->getID() << ".\n";
-                        output += "Giocatore " + std::to_string(players[i]->getID()) + " ha pagato un affitto di " + std::to_string(toPay) + " " + Variabili::getValuta() + " al giocatore " + std::to_string(pos4->getProprietario()->getID()) + ".\n";
                     }
                     catch (const Giocatore::Player_Lost& e)
                     {
-                        std::this_thread::sleep_for(std::chrono::seconds(pausa));
-                        output += "Giocatore " + std::to_string(players[i]->getID()) + " e' andato in bancarotta e ha perso.\n";
+                        aggiornaSchermo(T,players,output);
+                        std::this_thread::sleep_for(std::chrono::seconds(pausaLunga));
+                        std::cout << "Giocatore " + std::to_string(players[i]->getID()) + " e' andato in bancarotta e ha perso.\n";
                         players[i]->getPosition()->removePlayer(players[i]->getID()); // Rimozione dal tabellone del giocatore dalla casella vecchia
                     }
-                    aggiornaSchermo(T,players,output);
                 }
             }
     // Casella angolare
@@ -1287,7 +1284,10 @@ int main(int argc, char *argv[])
             for (int k=0; k < players.size(); k++)
             {
                 if (!players[k]->isInGame()) // Se il giocatore non è più in game
-                {                            // lo tolgo dal vettore di players
+                {            
+                    outputFinale += "\nGiocatore " + std::to_string(players[i]->getID()) + " e' uscito dal game al turno " + std::to_string(j) + ".\n";                
+                    delete players[k];
+                    // e lo tolgo dal vettore di players
                     players.erase(players.begin() + k);
                 }
             }
@@ -1487,7 +1487,7 @@ int main(int argc, char *argv[])
     {
         std::cout << ".\nVincitore non chiaro, qualcosa è andato storto nella chiusura del game.";
     }
-    std::cout << "\n" << muro;
+    std::cout << outputFinale + "\n" << muro;
 
     std::this_thread::sleep_for(std::chrono::seconds(10));
     return 0;

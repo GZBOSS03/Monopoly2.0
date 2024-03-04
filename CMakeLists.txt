@@ -33,4 +33,3 @@ target_link_libraries(Game Tabellone Giocatori)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
 install(TARGETS Game DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/bin)
-

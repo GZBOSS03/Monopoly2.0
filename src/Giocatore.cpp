@@ -313,7 +313,7 @@ std::ostream &operator<<(std::ostream &os, Giocatore G)
             // Utilizza una std::ostringstream per formattare il testo
             std::ostringstream playerFormatted;
             if (G._elenco_proprieta[i]->isAlbergo())
-                playerFormatted << "\033[1m" << G._elenco_proprieta[i]->getName() << "\033[0m" << RESET;    // Grassetto
+                playerFormatted << "\033[1m"  << "\033[4m" << G._elenco_proprieta[i]->getName() << "\033[0m" << RESET;    // Grassetto e sottolineato
             else
                 playerFormatted << "\033[4m" << G._elenco_proprieta[i]->getName() << "\033[0m" << RESET;    // Sottolineato
             os << std::setw(10) << playerFormatted.str();
