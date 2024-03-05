@@ -26,13 +26,16 @@ public:
     // Funzioni membro
     void buy(); // Effettua l'acquisto della casella su cui il giocatore si trova
     void buy(int, Casella*); // Effettua l'acquisto della casella passata con il prezzo passato (usato nelle aste)
+    void pushInToBuild(Casella_Terreno* A);
+
+    // Funzioni di movimento
     void move(int);
     void moveBack(int n);
     void goTo(Casella*);
     void moveTo(int);
     void goTo(std::string);   // Riceve un nome di una casella e sposta il giocatore in quella casella
     
-    // Funzione GET
+    // Funzioni GET
     int getMoney() const { return _money; }
     Casella *getPosition() const { return _pos; }
     int getID() const { return _ID; }
@@ -43,14 +46,12 @@ public:
     bool hasFreeExitPrisonProb() {return FreeExitPrisonProb;}
     bool hasFreeExitPrisonImpr() {return FreeExitPrisonImpr;}
     std::string getToBuild();
-    void pushInToBuild(Casella_Terreno* A);
 
     // Funzioni SET
     void setJail(bool t)  { _isInJail = t;  if(!t) _turniJail=1; }
     void setPos(Casella*);
     void setFreeExitPrisonProb(bool a) { FreeExitPrisonProb = a; }
     void setFreeExitPrisonImpr(bool a) { FreeExitPrisonImpr = a; }
-    void resetPlayer(); // Per quando un giocatore perde
     void incrementTurniJail() { _turniJail++; }
     void incrementNTurno() { _nturno++; }
     void resetNTurno() { _nturno = 1; }
@@ -59,10 +60,6 @@ public:
     virtual void Transaction(int, Giocatore *, std::string *) {}; // Se non si hanno abbastanza soldi il giocatore ipoteca fin che può e infine, quando non potra più pagare, viene eliminato e lancio eccezione
     void pay(int);                         // Se non si hanno abbastanza soldi il giocatore non può pagare e lancio eccezione
     void deposit(int);                     // chiamato quando un altro giocatore cade su un mio terreno e mi deve pagare o quando passo dal via
-
-    // Il metodo giveTo permette di cedere una proprietà ad un altro giocatore, metodo sovraccarico
-    bool giveTo(Casella_Terreno*, Giocatore *);
-    bool giveTo(Casella_Stazione*, Giocatore *);
 
     // Eccezioni
     class Not_Enough_Money{};
@@ -87,7 +84,7 @@ protected:
 
 std::ostream &operator<<(std::ostream &, Giocatore);
 
-// Predicati per la funzione di ordinamento
+// Predicato per la funzione di ordinamento
 bool confrontaElementi(const Casella_Terreno*, const Casella_Terreno*);
 
 #endif // GIOCATORE_H

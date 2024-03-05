@@ -383,7 +383,6 @@ void Computer::Transaction(int n, Giocatore *Other, std::string *output){
                 *output += *toAdd + s;
 
                 // ... ed esce dal gioco
-                resetPlayer();
                 _isInGame = false;
             
                 throw Player_Lost();
@@ -400,6 +399,7 @@ void Computer::Transaction(int n, Giocatore *Other, std::string *output){
     }
 }
 
+// Migliorabile con imlementazione di "IA" aggiuntiva
 bool Computer::wantToBuild(Casella_Terreno* A){
     if (_money < 300) // Se il giocatore non ha abbastanza soldi per costruire
         return false;

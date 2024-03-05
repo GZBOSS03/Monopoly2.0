@@ -310,7 +310,6 @@ void Human::Transaction(int n, Giocatore *Other, std::string *output){
                 *output += *toAdd + s;
 
                 // ... ed esce dal gioco
-                resetPlayer();
                 _isInGame = false;
             
                 throw Player_Lost();

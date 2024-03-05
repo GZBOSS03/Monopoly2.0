@@ -180,57 +180,6 @@ void Giocatore::goTo(std::string N)
     };
 }
 
-void Giocatore::resetPlayer(){
-    for (int i = 0; i < _elenco_proprieta.size(); i++)
-    {
-        _elenco_proprieta[i]->reset();
-    }
-    for (int i = 0; i < _elenco_proprieta_st.size(); i++)
-    {
-        _elenco_proprieta_st[i]->reset();
-    }
-    for (int i = 0; i < _elenco_proprieta_soc.size(); i++)
-    {
-        _elenco_proprieta_soc[i]->reset();
-    }
-}
-
-bool Giocatore::giveTo(Casella_Terreno* A, Giocatore *Other)
-{
-    // Check se la proprietà è nell'elenco
-    for (int i=0; i < _elenco_proprieta.size(); i++)
-    {
-        if (_elenco_proprieta[i]->getName() == A->getName())
-        {
-            // Tolgo la proprietà dall'elenco
-            _elenco_proprieta.erase(_elenco_proprieta.begin() + i);
-            // La aggiungo all'altro giocatore
-            Other->_elenco_proprieta.push_back(A);
-            return true;
-        }
-    }
-
-    return false; // Se la proprietà non è nell'elenco
-}
-
-bool Giocatore::giveTo(Casella_Stazione* A, Giocatore *Other)
-{
-    // Check se la proprietà è nell'elenco stazioni
-    for (int i=0; i < _elenco_proprieta_st.size(); i++)
-    {
-        if (_elenco_proprieta_st[i]->getName() == A->getName())
-        {
-            // Tolgo la proprietà dall'elenco
-            _elenco_proprieta_st.erase(_elenco_proprieta_st.begin() + i);
-            // La aggiungo all'altro giocatore
-            Other->_elenco_proprieta_st.push_back(A);
-            return true;
-        }
-    }
-
-    return false; // Se la proprietà non è nell'elenco
-}
-
 std::string Giocatore::getToBuild()
 {
     std::string s = "";
@@ -258,8 +207,13 @@ std::ostream &operator<<(std::ostream &os, Giocatore G)
     os << "\nGiocatore " << G.getID() << toAdd << ": ";
     for (int i = 0; i < G._elenco_proprieta_soc.size(); i++)
     {
+        std::ostringstream gg1;
         SetConsoleTextAttribute(hConsole, FOREGROUND_INTENSITY | FOREGROUND_GREEN);
-        os << G._elenco_proprieta_soc[i]->getName() << RESET;
+        if (G._elenco_proprieta_soc.size() == 2)
+            gg1 << "\033[4m" << G._elenco_proprieta_soc[i]->getName() << "\033[0m" << RESET;    // Sottolineato
+        else
+            gg1 << G._elenco_proprieta_soc[i]->getName() << RESET;
+        os << std::setw(10) << gg1.str();
         s += G._elenco_proprieta_soc[i]->getName();
         if ((i+1 != G._elenco_proprieta_soc.size()) || (G._elenco_proprieta.size() > 0) || (G._elenco_proprieta_st.size() > 0))
         {
@@ -269,8 +223,13 @@ std::ostream &operator<<(std::ostream &os, Giocatore G)
     }
     for (int i = 0; i < G._elenco_proprieta_st.size(); i++)
     {
+        std::ostringstream gg;
         SetConsoleTextAttribute(hConsole, FOREGROUND_INTENSITY | 0);
-        os << G._elenco_proprieta_st[i]->getName() << RESET;
+        if (G._elenco_proprieta_st.size() == 4)
+            gg << "\033[4m" << G._elenco_proprieta_st[i]->getName() << "\033[0m" << RESET;    // Sottolineato
+        else
+            gg << G._elenco_proprieta_st[i]->getName() << RESET;
+        os << std::setw(10) << gg.str();
         s += G._elenco_proprieta_st[i]->getName();
         if ((i+1 != G._elenco_proprieta_st.size()) || (G._elenco_proprieta.size() > 0))
         {
