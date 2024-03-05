@@ -241,7 +241,7 @@ std::string Giocatore::getToBuild()
     return s;
 }
 
-// Predicati per la funzione di ordinamento
+// Predicato per la funzione di ordinamento
 bool confrontaElementi(const Casella_Terreno* elem1, const Casella_Terreno* elem2) {
     return elem1->getPrezzoTerreno() <= elem2->getPrezzoTerreno();
 }
@@ -308,18 +308,16 @@ std::ostream &operator<<(std::ostream &os, Giocatore G)
 
         // Stampa del nome
         // Se ho tutte le caselle dello stesso colore le sottolineo in output (se ci posso costruire)
-        if (G._elenco_proprieta[i]->canBuy())
-        {   
-            // Utilizza una std::ostringstream per formattare il testo
-            std::ostringstream playerFormatted;
-            if (G._elenco_proprieta[i]->isAlbergo())
-                playerFormatted << "\033[1m"  << "\033[4m" << G._elenco_proprieta[i]->getName() << "\033[0m" << RESET;    // Grassetto e sottolineato
-            else
-                playerFormatted << "\033[4m" << G._elenco_proprieta[i]->getName() << "\033[0m" << RESET;    // Sottolineato
-            os << std::setw(10) << playerFormatted.str();
-        }
+        // Utilizza una std::ostringstream per formattare il testo
+        std::ostringstream playerFormatted;
+        if (G._elenco_proprieta[i]->isAlbergo())
+            playerFormatted << "\033[1m"  << "\033[4m" << G._elenco_proprieta[i]->getName() << "\033[0m" << RESET;    // Grassetto e sottolineato
+        else if (G._elenco_proprieta[i]->canBuy())
+            playerFormatted << "\033[4m" << G._elenco_proprieta[i]->getName() << "\033[0m" << RESET;    // Sottolineato
         else
-            os << G._elenco_proprieta[i]->getName() << RESET;
+            playerFormatted << G._elenco_proprieta[i]->getName() << RESET;
+        os << std::setw(10) << playerFormatted.str();
+        
         s += G._elenco_proprieta[i]->getName();
 
         if (i+1 != G._elenco_proprieta.size())

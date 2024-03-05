@@ -296,7 +296,12 @@ void Computer::Transaction(int n, Giocatore *Other, std::string *output){
                             *toAdd += "-" + s + _elenco_proprieta_to_build[i]->getName() + " (" + std::to_string(_elenco_proprieta_to_build[i]->getPrezzo()/2) + ")\n";
                             deposit(_elenco_proprieta_to_build[i]->getPrezzo()/2);
                             _elenco_proprieta_to_build[i]->ipoteca();
-                            _elenco_proprieta_to_build[i]->changeCanBuy();
+                            _elenco_proprieta_to_build[i]->setCanBuy(true);
+                            for (int j=0; j < _elenco_proprieta_to_build.size(); j++)
+                            {
+                                if (_elenco_proprieta_to_build[j]->getFamily() == _elenco_proprieta_to_build[i]->getFamily() && _elenco_proprieta_to_build[j]->getStatus() > _elenco_proprieta_to_build[i]->getStatus())
+                                    _elenco_proprieta_to_build[j]->setCanBuy(false);
+                            }
                             std::this_thread::sleep_for(std::chrono::seconds(pausa));
                             std::cout << "Giocatore " << _ID << " ora ha " << _money << " " << Variabili::getValuta();
                             if (_money < n)
