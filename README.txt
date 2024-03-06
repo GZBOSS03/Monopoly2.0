@@ -22,8 +22,8 @@ con le stesse regole (+ qualche modifichina). Qui vi elenco qualche info importa
   (non ci sono ad ex 28 case e poi basta, se ne possono costruire finche se ne ha la possibilità)
 - i giocatori computer generano sia risposte casuali sia risposte intelligenti
   (si potrebbe lavorare di più sulla loro parziale IA)
-- quando un giocatore deve ipotecare dei terreni se è un bot ipoteca prima le società, poi le stazioni, poi eventuali case 
-  e infine i terreni
+- quando un giocatore deve ipotecare dei terreni se è un bot ipoteca prima le società, poi le stazioni, infine 
+  eventuali case/alberghi e terreni (*IA migliorabile)
 - quando un giocatore ipoteca il terreno, questo viene semplicemente restituito alla banca, senza aste o robe varie
 - quando un giocatore ottiene una carta uscita gratis di prigione essa viene visualizzata sotto forma di asterisco
   accanto alla scritta del nome: "Giocatore i*:"
