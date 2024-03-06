@@ -517,28 +517,24 @@ int main(int argc, char *argv[])
                             output += "Pagate per i contributi di miglioria stradale: 25 " + Variabili::getValuta() + " per ogni casa, 100 " + Variabili::getValuta() + " per ogni albergo.";
                             std::this_thread::sleep_for(std::chrono::seconds(pausa));
                             money = 25*counterCase + 100*counterAlb;
-                            if (money > 0)
-                            {
-                                if (counterCase > 0)
-                                {
-                                    std::cout << "\nGiocatore " << players[i]->getID() << " ha " << counterCase << " case.";
-                                    output += "\nGiocatore " + std::to_string(players[i]->getID()) + " possiede " + std::to_string(counterCase) + " case.";
-                                    std::this_thread::sleep_for(std::chrono::seconds(pausa));
-                                }
-                                if (counterAlb > 0) 
-                                {
-                                    std::cout << "\nGiocatore " << players[i]->getID() << " ha " << counterAlb << " alberghi.";
-                                    output += "\nGiocatore " + std::to_string(players[i]->getID()) + " possiede " + std::to_string(counterAlb) + " alberghi.";
-                                    std::this_thread::sleep_for(std::chrono::seconds(pausa));
-                                }
                             
-                                std::cout << "\nGiocatore " << players[i]->getID() << " deve pagare " << counterCase << " x 25 + " << counterAlb << " x 100 = " << money << " " << Variabili::getValuta() << ".\n";
-                                output += "\nGiocatore " + std::to_string(players[i]->getID()) + " deve pagare " + std::to_string(counterCase) + " x 25 + "  + std::to_string(counterAlb) + " x 100 = "  + std::to_string(money) + " " + Variabili::getValuta() + ".\n";
+                            std::cout << "\nGiocatore " << players[i]->getID() << " ha " << counterCase << " case.";
+                            output += "\nGiocatore " + std::to_string(players[i]->getID()) + " possiede " + std::to_string(counterCase) + " case.";
+                            std::this_thread::sleep_for(std::chrono::seconds(pausa));
+                            
+                            std::cout << "\nGiocatore " << players[i]->getID() << " ha " << counterAlb << " alberghi.";
+                            output += "\nGiocatore " + std::to_string(players[i]->getID()) + " possiede " + std::to_string(counterAlb) + " alberghi.";
+                            std::this_thread::sleep_for(std::chrono::seconds(pausa));
+                            
+                            std::cout << "\nGiocatore " << players[i]->getID() << " deve pagare " << counterCase << " x 25 + " << counterAlb << " x 100 = " << money << " " << Variabili::getValuta() << ".\n";
+                            output += "\nGiocatore " + std::to_string(players[i]->getID()) + " deve pagare " + std::to_string(counterCase) + " x 25 + "  + std::to_string(counterAlb) + " x 100 = "  + std::to_string(money) + " " + Variabili::getValuta() + ".\n";
+                            
+                            if (money > 0)
                                 pay = true;
-                            }
                             else
                             {
-                                std::cout << "\nGiocatore " << players[i]->getID() << " non ha ancora costruito case, quindi non paga nulla.\n";
+                                std::this_thread::sleep_for(std::chrono::seconds(pausa));
+                                std::cout << "\nGiocatore " << players[i]->getID() << " non paga nulla.\n";
                             }
                         break;
                         
@@ -745,29 +741,24 @@ int main(int argc, char *argv[])
                             std::cout << "Pagate per i contributi di miglioria stradale: 40 "<< Variabili::getValuta() << " per ogni casa, 115 "<< Variabili::getValuta() << " per ogni albergo.";
                             output += "Pagate per i contributi di miglioria stradale: 40 " + Variabili::getValuta() + " per ogni casa, 115 " + Variabili::getValuta() + " per ogni albergo.";
                             std::this_thread::sleep_for(std::chrono::seconds(pausa));
+                            
+                            std::cout << "\nGiocatore " << players[i]->getID() << " ha " << counterCase << " case.";
+                            output += "\nGiocatore " + std::to_string(players[i]->getID()) + " possiede " + std::to_string(counterCase) + " case.";
+                            std::this_thread::sleep_for(std::chrono::seconds(pausa));
+                            
+                            std::cout << "\nGiocatore " << players[i]->getID() << " ha " << counterAlb << " alberghi.";
+                            output += "\nGiocatore " + std::to_string(players[i]->getID()) + " possiede " + std::to_string(counterAlb) + " alberghi.";
+                            std::this_thread::sleep_for(std::chrono::seconds(pausa));
+                            
                             money = 40*counterCase + 115*counterAlb;
+                            std::cout << "\nGiocatore " << players[i]->getID() << " deve pagare " << counterCase << " x 40 + " << counterAlb << " x 115 = " << money << " " << Variabili::getValuta() << ".\n";
+                            output += "\nGiocatore " + std::to_string(players[i]->getID()) + " deve pagare " + std::to_string(counterCase) + " x 40 + "  + std::to_string(counterAlb) + " x 115 = "  + std::to_string(money) + " " + Variabili::getValuta() + ".\n";
                             if (money > 0)
-                            {
-                                if (counterCase > 0)
-                                {
-                                    std::cout << "\nGiocatore " << players[i]->getID() << " ha " << counterCase << " case.";
-                                    output += "\nGiocatore " + std::to_string(players[i]->getID()) + " possiede " + std::to_string(counterCase) + " case.";
-                                    std::this_thread::sleep_for(std::chrono::seconds(pausa));
-                                }
-                                if (counterAlb > 0) 
-                                {
-                                    std::cout << "\nGiocatore " << players[i]->getID() << " ha " << counterAlb << " alberghi.";
-                                    output += "\nGiocatore " + std::to_string(players[i]->getID()) + " possiede " + std::to_string(counterAlb) + " alberghi.";
-                                    std::this_thread::sleep_for(std::chrono::seconds(pausa));
-                                }
-                                std::cout << "\nGiocatore " << players[i]->getID() << " deve pagare " << counterCase << " x 40 + " << counterAlb << " x 115 = " << money << " " << Variabili::getValuta() << ".\n";
-                                output += "\nGiocatore " + std::to_string(players[i]->getID()) + " deve pagare " + std::to_string(counterCase) + " x 40 + "  + std::to_string(counterAlb) + " x 115 = "  + std::to_string(money) + " " + Variabili::getValuta() + ".\n";
                                 pay = true;
-                            }
                             else
                             {
                                 std::this_thread::sleep_for(std::chrono::seconds(pausa));
-                                std::cout << "\nGiocatore " << players[i]->getID() << " non ha ancora costruito case, quindi non paga nulla.\n";
+                                std::cout << "\nGiocatore " << players[i]->getID() << " non paga nulla.\n";
                             }
                         break;
                         
@@ -1290,14 +1281,8 @@ int main(int argc, char *argv[])
 // Asta in caso il giocatore non abbia voluto acquistare un terreno
             if(!sold)
             {
-                std::string hey = "\n" + muro + "\n";
-                aggiornaSchermo(T,players,hey);
-                hey += "Giocatore " + std::to_string(players[i]->getID()) + " non ha acquistato " + players[i]->getPosition()->getName() + ", quindi inizia l'asta.\n";
-                std::cout << "Giocatore " << players[i]->getID() << " non ha acquistato " << players[i]->getPosition()->getName() << ", quindi inizia l'asta.\n";
-                std::this_thread::sleep_for(std::chrono::seconds(pausa));
                 std::vector<Giocatore *> playersAsta;
-                bool noOneWants = true;
-                int prezzo = 0;
+                int prezzo;
                 if (pos2)
                     prezzo = pos2->getPrezzo()/2;
                 if (pos1)
@@ -1313,15 +1298,16 @@ int main(int argc, char *argv[])
                         {
                             playersAsta.push_back(players[w]);
                         }
-                        else 
-                        {
-                            std::cout << "Giocatore " << players[w]->getID() << " non ha abbastanza "<< Variabili::getValuta() << " per partecipare all'asta.\n";
-                            std::this_thread::sleep_for(std::chrono::seconds(pausa));
-                        }
                     }
                 }
                 if (!playersAsta.empty())
                 {
+                    std::string hey = "\n" + muro + "\n";
+                    aggiornaSchermo(T,players,hey);
+                    hey += "Giocatore " + std::to_string(players[i]->getID()) + " non ha acquistato " + players[i]->getPosition()->getName() + ", quindi inizia l'asta.\n";
+                    std::cout << "Giocatore " << players[i]->getID() << " non ha acquistato " << players[i]->getPosition()->getName() << ", quindi inizia l'asta.\n";
+                    std::this_thread::sleep_for(std::chrono::seconds(pausa));
+                    bool noOneWants = true;
                     do
                     {
                         std::cout << "All'asta partecipano i seguenti giocatori:";
@@ -1434,13 +1420,11 @@ int main(int argc, char *argv[])
                     }
                     else
                         std::cout << "Nessun giocatore ha mostrato interersse per l'acquisto.\n";
-                }
-                else
-                    std::cout << "Nessun giocatore ha abbastanza " << Variabili::getValuta() << " per partecipare all'asta.\n";
                     
-                std::this_thread::sleep_for(std::chrono::seconds(pausa));
-                std::cout << "Fine asta.\n" << muro;
-                std::this_thread::sleep_for(std::chrono::seconds(pausa));
+                    std::this_thread::sleep_for(std::chrono::seconds(pausa));
+                    std::cout << "Fine asta.\n" << muro;
+                    std::this_thread::sleep_for(std::chrono::seconds(pausa));
+                }
             }
 
 // Verifiche sul tiro dei dadi del giocatore una volta finito il suo turno (possibile turno extra)

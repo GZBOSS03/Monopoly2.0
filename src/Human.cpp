@@ -296,7 +296,7 @@ void Human::Transaction(int n, Giocatore *Other, std::string *output){
                 // Se il giocatore non ha più nulla da ipotecare, paga tutti i soldi che ha ...
                 std::cout << "Giocatore " + std::to_string(_ID) + " non ha piu nulla da ipotecare e non riesce a pagare.\n";
                 *toAdd += "Giocatore " + std::to_string(_ID) + " non ha piu nulla da ipotecare e non riesce a pagare.\n";
-                std::this_thread::sleep_for(std::chrono::seconds(pausa));
+                std::this_thread::sleep_for(std::chrono::seconds(Variabili::pausaLunga));
                 std::string s = "Giocatore " + std::to_string(_ID) + " ha pagato tutti i suoi " + Variabili::getValuta() + ", " + std::to_string(_money);
                 if (Other)
                 {
@@ -401,73 +401,71 @@ void Human::Transaction(int n, Giocatore *Other, std::string *output){
             {
                 if (!_elenco_proprieta_to_build.empty())
                 {
-                    bool toDo = true; // Finché nel vettore c'è ancora 1 sola proprietà con 1 casa non si esce dal ciclo (o se raggiungo il giusto da pagare)
-                    while (toDo)
+                    for (int i=0; i < _elenco_proprieta_to_build.size(); i++)
                     {
-                        for (int i=0; i < _elenco_proprieta_to_build.size(); i++)
+                        if (_money < n)
                         {
-                            if (_money < n)
+                            if (_elenco_proprieta_to_build[i]->isCasa1())
                             {
-                                if (_elenco_proprieta_to_build[i]->isCasa1())
-                                {
-                                    std::string s = " una casa in ";
-                                    if (_elenco_proprieta_to_build[i]->isAlbergo())
-                                        s = " l'albergo in ";
-                                    std::cout << "Vuoi ipotecare" << s << _elenco_proprieta_to_build[i]->getName() << "? (Inserire S per si, N per no)\n";
-                                    bool done = false;
-                                    do
-                                    {
-                                        char gg;
-                                        std::cin >> gg;
-                                        if (gg == 'S' || gg == 's')
-                                        {
-                                            int schei = _elenco_proprieta_to_build[i]->getPrezzo()/2;
-                                            std::cout << "Giocatore " << _ID << " ha ipotecato" << s << _elenco_proprieta_to_build[i]->getName() << " e ha ricavato " << schei << " " << Variabili::getValuta() << ".\n";
-                                            *toAdd += "-" + s + _elenco_proprieta_to_build[i]->getName() + " (" + std::to_string(schei) + ")\n";
-                                            deposit(schei);
-                                            _elenco_proprieta_to_build[i]->ipoteca();
-                                            _elenco_proprieta_to_build[i]->setCanBuy(true);
-                                            for (int j=0; j<_elenco_proprieta_to_build.size(); j++)
-                                            {
-                                                if (_elenco_proprieta_to_build[j]->getFamily() == _elenco_proprieta_to_build[i]->getFamily() && _elenco_proprieta_to_build[j]->getStatus() > _elenco_proprieta_to_build[i]->getStatus())
-                                                    _elenco_proprieta_to_build[j]->setCanBuy(false);
-                                            }
-                                            std::this_thread::sleep_for(std::chrono::seconds(pausa));
-                                            std::cout << "Giocatore " << _ID << " ora ha " << _money << " " << Variabili::getValuta();
-                                            if (_money < n)
-                                                std::cout << ", ma ancora non bastano.\n";
-                                            else
-                                                std::cout << ", abbastanza per pagare.\n";
-                                            done = true;
-                                        }
-                                        else if (gg == 'N' || gg == 'n')
-                                        {
-                                            done = true;
-                                        } else
-                                            std::cout << "Comando non riconosciuto (Inserire S per si, N per no)\n";
-                                    } while (!done);
-                                    
+                                if (i != _elenco_proprieta_to_build.size()-1)
+                                {       
+                                    if (_elenco_proprieta_to_build[i]->getStatus() < _elenco_proprieta_to_build[i+1]->getStatus())
+                                        continue;
                                 }
+                                std::string s = " una casa in ";
+                                if (_elenco_proprieta_to_build[i]->isAlbergo())
+                                    s = " l'albergo in ";
+                                std::cout << "Vuoi ipotecare" << s << _elenco_proprieta_to_build[i]->getName() << "? (Inserire S per si, N per no)\n";
+                                bool done = false;
+                                do
+                                {
+                                    char gg;
+                                    std::cin >> gg;
+                                    if (gg == 'S' || gg == 's')
+                                    {
+                                        int schei = _elenco_proprieta_to_build[i]->getPrezzo()/2;
+                                        std::cout << "Giocatore " << _ID << " ha ipotecato" << s << _elenco_proprieta_to_build[i]->getName() << " e ha ricavato " << schei << " " << Variabili::getValuta() << ".\n";
+                                        *toAdd += "-" + s + _elenco_proprieta_to_build[i]->getName() + " (" + std::to_string(schei) + ")\n";
+                                        deposit(schei);
+                                        _elenco_proprieta_to_build[i]->ipoteca();
+                                        _elenco_proprieta_to_build[i]->setCanBuy(true);
+                                        for (int j=0; j<_elenco_proprieta_to_build.size(); j++)
+                                        {
+                                            if (_elenco_proprieta_to_build[j]->getFamily() == _elenco_proprieta_to_build[i]->getFamily() && _elenco_proprieta_to_build[j]->getStatus() > _elenco_proprieta_to_build[i]->getStatus())
+                                                _elenco_proprieta_to_build[j]->setCanBuy(false);
+                                        }
+                                        std::this_thread::sleep_for(std::chrono::seconds(pausa));
+                                        std::cout << "Giocatore " << _ID << " ora ha " << _money << " " << Variabili::getValuta();
+                                        if (_money < n)
+                                            std::cout << ", ma ancora non bastano.\n";
+                                        else
+                                            std::cout << ", abbastanza per pagare.\n";
+                                        done = true;
+                                    }
+                                    else if (gg == 'N' || gg == 'n')
+                                    {
+                                        done = true;
+                                    } else
+                                        std::cout << "Comando non riconosciuto (Inserire S per si, N per no)\n";
+                                } while (!done);
                             }
-                        }
-                        if (toDo = true && _money < n)
-                        {
-                            bool allsold = true;
-                            for (int s = 0; s < _elenco_proprieta_to_build.size(); s++)
-                            {
-                                if (_elenco_proprieta_to_build[s]->isCasa1())
-                                    allsold = false;
-                            }
-                            if (allsold)
-                                toDo = false;
                         }
                     }
                 }
                 for (int i=0; i < _elenco_proprieta.size(); i++)
                 {
+                    std::sort(_elenco_proprieta.begin(), _elenco_proprieta.end(), confrontaElementiStatus);
                     if (_money < n)
                     {
-                        if (!_elenco_proprieta[i]->isCasa1())
+                        bool terrenoIpotecabile = true;
+                        for (int j=0; j<_elenco_proprieta_to_build.size(); j++)
+                        {
+                            // Se in _elenco_proprieta_to_build c'è almeno 1 proprietà dello stesso colore con 1 casa, allora non posso ipoteacare il terreno i
+                            // (prima ipoteco tutte le case della famiglia e poi posso ipotecare i terreni)
+                            if (_elenco_proprieta_to_build[j]->getFamily() == _elenco_proprieta[i]->getFamily() && _elenco_proprieta_to_build[j]->isCasa1())
+                                terrenoIpotecabile = false;
+                        }
+                        if (terrenoIpotecabile)
                         {
                             std::cout << "Vuoi ipotecare " << _elenco_proprieta[i]->getName() << "? (Inserire S per si, N per no)\n";
                             bool done = false;
@@ -518,10 +516,12 @@ void Human::Transaction(int n, Giocatore *Other, std::string *output){
         }
 
         // Se non viene lanciata l'eccezione, allora esco dal ciclo con una quantità di soldi sufficiente da poter pagare (ovviamente avendo ipotecato qualcosa)
+        std::this_thread::sleep_for(std::chrono::seconds(Variabili::pausaLunga));
         if (Other)
             Other->deposit(n);
         this->pay(n);
         *output += *toAdd;
+        std::sort(_elenco_proprieta.begin(), _elenco_proprieta.end(), confrontaElementi);
     }
 }
 

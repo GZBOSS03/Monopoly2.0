@@ -12,6 +12,7 @@ struct Variabili
     static const std::string getValuta() {return "euro";}
     static const int contoAllaRovescitaDa = 3;
     static const int pausa = 1;
+    static const int pausaLunga = 5;
 
     // Preferibilmete da non modificare
     static const int nFacceDado = 6;

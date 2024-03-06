@@ -190,9 +190,13 @@ std::string Giocatore::getToBuild()
     return s;
 }
 
-// Predicato per la funzione di ordinamento
+// Predicati per la funzione di ordinamento
 bool confrontaElementi(const Casella_Terreno* elem1, const Casella_Terreno* elem2) {
     return elem1->getPrezzoTerreno() <= elem2->getPrezzoTerreno();
+}
+
+bool confrontaElementiStatus(const Casella_Terreno* elem1, const Casella_Terreno* elem2) {
+    return elem1->getStatus() < elem2->getStatus();
 }
 
 std::ostream &operator<<(std::ostream &os, Giocatore G)
